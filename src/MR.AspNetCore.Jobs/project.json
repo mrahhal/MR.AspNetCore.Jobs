@@ -2,6 +2,13 @@
   "version": "1.0.0-*",
 
   "dependencies": {
+    "Dapper": "1.50.0-rc2",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-rc2-final",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-rc2-final",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Logging": "1.0.0-rc2-final",
+    "MR.NCrontab": "1.0.0",
+    "Newtonsoft.Json": "8.0.3"
   },
 
   "frameworks": {

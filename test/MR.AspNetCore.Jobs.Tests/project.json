@@ -2,9 +2,8 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-*",
+    "dotnet-test-xunit": "1.0.0-rc3-*",
     "FluentAssertions": "4.2.2",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "MR.AspNetCore.Jobs": "*",
     "xunit": "2.1.0"
   },
@@ -12,19 +11,6 @@
   "testRunner": "xunit",
 
   "frameworks": {
-    "netcoreapp1.0": {
-      "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0-rc2-3002702"
-        },
-        "moq.netcore": "4.4.0-beta8"
-      },
-      "imports": [
-        "dnxcore50",
-        "portable-net45+win8"
-      ]
-    },
     "net451": {
       "dependencies": {
         "Moq": "4.2.1510.2205"
