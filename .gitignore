@@ -1,0 +1,14 @@
+[Oo]bj/
+[Bb]in/
+TestResults/
+packages/
+artifacts/
+.vs/
+debugSettings.json
+project.lock.json
+*.user
+*.suo
+*.cache
+*.vsp
+*.userprefs
+*.*sdf
