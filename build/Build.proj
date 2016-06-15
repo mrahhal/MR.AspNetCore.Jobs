@@ -20,8 +20,9 @@
 	<ItemGroup>
 		<Assemblies Include="MR.AspNetCore.Jobs" />
 		<Assemblies Include="MR.AspNetCore.Jobs.SqlServer" />
-		<TestAsseblies Include="MR.AspNetCore.Jobs.Tests" />
-		<TestAsseblies Include="MR.AspNetCore.Jobs.SqlServer.Tests" />
+		<TestAssemblies Include="MR.AspNetCore.Jobs.Tests" />
+		<TestAssemblies Include="MR.AspNetCore.Jobs.SqlServer.Tests"
+									 Condition="'$(BUILDING_ON_PLATFORM)' != 'unix'" />
 	</ItemGroup>
 	<Import Project="Build.tasks" />
 
