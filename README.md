@@ -52,7 +52,7 @@ public class HomeController : Controller
 }
 ```
 
-### Fire and forget jobs:
+### Fire and forget jobs
 ```cs
 // Execute a static method.
 _jobsManager.Enqueue(() => SomeStaticClass.SomeStaticMethod("foo"));
@@ -61,13 +61,13 @@ _jobsManager.Enqueue(() => SomeStaticClass.SomeStaticMethod("foo"));
 _jobsManager.Enqueue<FooService>(service => service.SomeMethod("foo"));
 ```
 
-### Delayed jobs:
+### Delayed jobs
 ```cs
 // Execute after 1 minute.
 _jobsManager.Enqueue(() => ..., TimeSpan.FromMinutes(1));
 ```
 
-### Cron jobs:
+### Cron jobs
 First, we'll have to create a registry that describes all the cron jobs we want to run:
 
 ```cs
