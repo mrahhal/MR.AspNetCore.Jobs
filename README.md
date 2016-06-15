@@ -52,7 +52,7 @@ public class HomeController : Controller
 }
 ```
 
-### Fire and forget jobs
+### Fire and forget jobs:
 ```cs
 // Execute a static method.
 _jobsManager.Enqueue(() => SomeStaticClass.SomeStaticMethod("foo"));
@@ -90,7 +90,7 @@ services.AddJobs(options =>
 {
     options.UseSqlServer("[my connection string]");
 
-    // Use the SomeCronJobRegistry
+    // Use the SomeCronJobRegistry.
     options.UseCronJobRegistry(new SomeCronJobRegistry());
 });
 ```
