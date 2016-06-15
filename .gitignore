@@ -12,3 +12,5 @@ project.lock.json
 *.vsp
 *.userprefs
 *.*sdf
+node_modules/
+**/wwwroot/lib/
