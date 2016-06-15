@@ -63,7 +63,6 @@ BEGIN
 		[TypeName] NVARCHAR (MAX) NULL,
 		[Cron]     NVARCHAR (MAX) NULL,
 		[LastRun]  DATETIME       NOT NULL,
-		[NextRun]  DATETIME       NOT NULL,
 
 		CONSTRAINT [PK_Jobs.CronJobs] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
