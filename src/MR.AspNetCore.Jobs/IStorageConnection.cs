@@ -19,6 +19,8 @@ namespace MR.AspNetCore.Jobs
 		CronJob[] GetCronJobs();
 
 		CronJob GetCronJobByName(string name);
+
+		void RemoveCronJob(string name);
 	}
 
 	public static class JobStorageConnectionExtensions

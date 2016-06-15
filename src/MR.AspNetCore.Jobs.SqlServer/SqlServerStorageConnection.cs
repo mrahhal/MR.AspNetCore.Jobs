@@ -67,7 +67,7 @@ namespace MR.AspNetCore.Jobs
 
 			var sql = @"
 				UPDATE Jobs.CronJobs
-				SET Cron = @cron, LastRun = @lastRun
+				SET TypeName = @typeName, Cron = @cron, LastRun = @lastRun
 				WHERE Id = @id";
 
 			_storage.UseConnection(connection =>
@@ -75,6 +75,7 @@ namespace MR.AspNetCore.Jobs
 				connection.Execute(sql, new
 				{
 					id = job.Id,
+					typeName = job.TypeName,
 					cron = job.Cron,
 					lastRun = job.LastRun
 				});
@@ -165,6 +166,18 @@ namespace MR.AspNetCore.Jobs
 				{
 					name
 				}).FirstOrDefault();
+			});
+		}
+
+		public void RemoveCronJob(string name)
+		{
+			var sql = @"
+				DELETE FROM Jobs.CronJobs
+				WHERE Name = @name";
+
+			_storage.UseConnection(connection =>
+			{
+				connection.Execute(sql, new { name });
 			});
 		}
 
