@@ -56,7 +56,7 @@ namespace MR.AspNetCore.Jobs.Server
 				}
 
 				_logger.LogInformation(
-					"Preparing cron job: \"{jobName}\" for execution.", new { jobName = nextJob.Job.Name });
+					"Preparing cron job: \"{jobName}\" for execution.", nextJob.Job.Name);
 				using (var scopedContext = context.CreateScope())
 				{
 					var factory = scopedContext.Provider.GetService<IJobFactory>();
@@ -66,7 +66,7 @@ namespace MR.AspNetCore.Jobs.Server
 					sw.Stop();
 					_logger.LogInformation(
 						"Cron job: \"{jobName}\" executed succesfully. Took: {seconds} secs.",
-						new { jobName = nextJob.Job.Name, seconds = sw.Elapsed.TotalSeconds });
+						nextJob.Job.Name, sw.Elapsed.TotalSeconds);
 
 					using (var connection = storage.GetConnection())
 					{
