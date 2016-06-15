@@ -59,7 +59,7 @@ BEGIN
 
 	CREATE TABLE [Jobs].[CronJobs] (
 		[Id]       NVARCHAR (128) NOT NULL,
-		[Name]     NVARCHAR (MAX) NULL,
+		[Name]     NVARCHAR (128) NOT NULL UNIQUE,
 		[TypeName] NVARCHAR (MAX) NULL,
 		[Cron]     NVARCHAR (MAX) NULL,
 		[LastRun]  DATETIME       NOT NULL,
