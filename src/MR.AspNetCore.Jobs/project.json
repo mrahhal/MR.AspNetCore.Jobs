@@ -1,6 +1,6 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "A lightweight inprocess background processing library for Asp.Net Core.",
+  "description": "A background processing library for Asp.Net Core.",
   "authors": [ "Mohammad Rahhal" ],
 
   "packOptions": {

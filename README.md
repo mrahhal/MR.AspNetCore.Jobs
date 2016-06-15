@@ -1,10 +1,10 @@
 # MR.AspNetCore.Jobs
 
-A lightweight inprocess background processing library for Asp.Net Core.
+A background processing library for Asp.Net Core.
 
 ## Overview
 
-A lot of the code was inspired from [Hangfire](https://github.com/HangfireIO/Hangfire) but this is a complete rewrite. I'll refer to this library as "Jobs".
+A lot of the code was inspired from [Hangfire](https://github.com/HangfireIO/Hangfire) but this is a complete (and a more lightweight) rewrite. I'll refer to this library as "Jobs".
 
 Jobs integrates well with Asp.Net Core and its dependency injection system with the following features:
 
