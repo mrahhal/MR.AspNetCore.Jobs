@@ -65,6 +65,9 @@
 		<Exec
 			WorkingDirectory="$(RootDir)/src/%(Assemblies.Identity)/"
 			Command="dotnet restore --quiet" />
+		<Exec
+			WorkingDirectory="$(RootDir)/src/%(TestAssemblies.Identity)/"
+			Command="dotnet restore --quiet" />
 	</Target>
 
 	<Target Name="Clean">
