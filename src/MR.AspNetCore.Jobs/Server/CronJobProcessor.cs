@@ -25,12 +25,13 @@ namespace MR.AspNetCore.Jobs.Server
 			if (context == null) throw new ArgumentNullException(nameof(context));
 
 			var storage = context.Storage;
-			CronJob[] jobs = null;
+			var jobs = default(CronJob[]);
 
 			using (var connection = storage.GetConnection())
 			{
 				jobs = connection.GetCronJobs();
 			}
+
 			if (!jobs.Any())
 			{
 				// Stop the RecurringJobProcessor

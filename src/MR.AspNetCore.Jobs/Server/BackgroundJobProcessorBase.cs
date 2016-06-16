@@ -22,6 +22,7 @@ namespace MR.AspNetCore.Jobs.Server
 		public void Process(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
+
 			OnProcessEnter(context);
 
 			try
@@ -29,8 +30,8 @@ namespace MR.AspNetCore.Jobs.Server
 				var storage = context.Storage;
 				using (var connection = storage.GetConnection())
 				{
-					IFetchedJob fetched = null;
-					while ((fetched = FetchNextJobCore(connection)) != null)
+					var fetched = default(IFetchedJob);
+					while (!context.IsStopping && (fetched = FetchNextJobCore(connection)) != null)
 					{
 						using (fetched)
 						using (var scopedContext = context.CreateScope())
