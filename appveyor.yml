@@ -7,7 +7,7 @@ environment:
 services:
   - mssql2012sp1
 install:
-  - ps: invoke-expression -Command .\ci-install.ps1
+  - ps: invoke-expression -Command ./build/ci-install.ps1
 build:
   project: build/Build.proj
   verbosity: normal
