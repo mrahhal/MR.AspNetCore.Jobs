@@ -3,7 +3,7 @@
 	<UsingTask
 		TaskName="RegexTransform"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
 		<ParameterGroup>
 			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
 			<Find Required="true" />
@@ -34,7 +34,7 @@
 	<UsingTask
 		TaskName="CreateStamp"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v12.0.dll">
 		<ParameterGroup>
 			<Stamp Output="true" />
 		</ParameterGroup>
