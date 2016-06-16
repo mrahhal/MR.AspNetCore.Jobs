@@ -36,7 +36,7 @@ namespace Basic
 				options.UseSqlServer(Configuration["ConnectionStrings:Default"]);
 
 				// Use the cron jobs registry
-				options.UseCronJobRegistry(new BasicCronJobRegistry());
+				options.UseCronJobRegistry<BasicCronJobRegistry>();
 			});
 
 			// Add jobs to DI

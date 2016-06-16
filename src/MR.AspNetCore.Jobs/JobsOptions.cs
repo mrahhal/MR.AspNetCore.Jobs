@@ -8,6 +8,13 @@ namespace MR.AspNetCore.Jobs
 
 		public CronJobRegistry CronJobRegistry { get; private set; }
 
+		public void UseCronJobRegistry<T>()
+			where T : CronJobRegistry
+		{
+			var registry = Activator.CreateInstance<T>();
+			UseCronJobRegistry(registry);
+		}
+
 		public void UseCronJobRegistry(CronJobRegistry registry)
 		{
 			if (registry == null) throw new ArgumentNullException(nameof(registry));

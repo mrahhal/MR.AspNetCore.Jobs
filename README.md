@@ -112,7 +112,7 @@ services.AddJobs(options =>
     options.UseSqlServer("[my connection string]");
 
     // Use the SomeCronJobRegistry.
-    options.UseCronJobRegistry(new SomeCronJobRegistry());
+    options.UseCronJobRegistry<SomeCronJobRegistry>();
 });
 ```
 
