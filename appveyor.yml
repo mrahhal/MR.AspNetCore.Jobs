@@ -6,8 +6,6 @@ environment:
   Jobs_SqlServer_ConnectionStringTemplate: Server=.\SQL2012SP1;Database={0};User ID=sa;Password=Password12!
 services:
   - mssql2012sp1
-install:
-  - ps: invoke-expression -Command ./build/ci-install.ps1
 build:
   project: build/Build.proj
   verbosity: normal
