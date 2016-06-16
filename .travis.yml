@@ -37,8 +37,6 @@ install:
   - curl -L "$DOTNET_SDK_URL" | tar -xzv -C "$DOTNET_INSTALL_DIR"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 
-mono:
-  - latest
 script:
   - chmod +x ./build.sh
   - ./build.sh
