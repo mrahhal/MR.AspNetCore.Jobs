@@ -11,9 +11,17 @@ addons:
     - libunwind8
     - zlib1g
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
-  - chmod +x ./build/ci-install.sh
-  - ./build/ci-install.sh
+  - find ./scripts -name "*.sh" -exec chmod +x {} \;
+  - ./scripts/show-dotnet-info.sh
+
+  # Download script to install dotnet cli
+  - curl -L --create-dirs https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh -o ./scripts/obtain/install.sh
+  - find ./scripts -name "*.sh" -exec chmod +x {} \;
+  - export DOTNET_INSTALL_DIR="$PWD/.dotnetcli"
+  # use bash to workaround bug https://github.com/dotnet/cli/issues/1725
+  - sudo bash ./scripts/obtain/install.sh --channel "preview" --version "$CLI_VERSION" --install-dir "$DOTNET_INSTALL_DIR" --no-path
+  # add dotnet to PATH
+  - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 mono:
   - 4.0.5
 os:
