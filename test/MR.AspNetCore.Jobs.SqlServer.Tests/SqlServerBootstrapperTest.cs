@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

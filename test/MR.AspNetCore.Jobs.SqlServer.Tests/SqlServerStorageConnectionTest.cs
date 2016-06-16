@@ -255,13 +255,14 @@ namespace MR.AspNetCore.Jobs
 		private SqlServerStorageConnection Create()
 		{
 			var services = new ServiceCollection();
-			services.AddJobsSqlServer();
 			services.AddOptions();
 			services.AddLogging();
+			services.AddTransient<SqlServerStorage>();
 			services.Configure<SqlServerOptions>(
 				options => options.ConnectionString = ConnectionUtil.GetConnectionString());
-			var provider = services.BuildServiceProvider();
-			return provider.GetService<IStorage>().GetConnection() as SqlServerStorageConnection;
+			return services.BuildServiceProvider()
+				.GetService<SqlServerStorage>()
+				.GetConnection() as SqlServerStorageConnection;
 		}
 	}
 }

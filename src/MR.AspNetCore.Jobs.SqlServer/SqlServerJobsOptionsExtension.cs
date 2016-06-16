@@ -14,7 +14,10 @@ namespace MR.AspNetCore.Jobs
 
 		public void AddServices(IServiceCollection services)
 		{
-			services.AddJobsSqlServer();
+			services.AddSingleton<IBootstrapper, SqlServerBootstrapper>();
+			services.AddSingleton<IStorage, SqlServerStorage>();
+			services.AddSingleton<IStorageConnection, SqlServerStorageConnection>();
+
 			services.Configure(_configure);
 		}
 	}
