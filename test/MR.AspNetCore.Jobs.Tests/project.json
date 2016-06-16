@@ -15,6 +15,20 @@
       "dependencies": {
         "Moq": "4.2.1510.2205"
       }
+    },
+    "netcoreapp1.0": {
+      "imports": [
+        "dnxcore50",
+        "portable-net451+win8"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002702"
+        },
+        "moq.netcore": "4.4.0-beta8",
+        "NETStandard.Library": "1.5.0-rc2-24027"
+      }
     }
   }
 }

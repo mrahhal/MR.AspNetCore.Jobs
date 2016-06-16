@@ -4,7 +4,6 @@
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc3-*",
     "FluentAssertions": "4.2.2",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "MR.AspNetCore.Jobs.SqlServer": "*",
     "xunit": "2.1.0"
   },
