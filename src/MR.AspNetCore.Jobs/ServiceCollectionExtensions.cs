@@ -18,7 +18,7 @@ namespace MR.AspNetCore.Jobs
 			// Jobs
 			services.AddTransient<FireAndForgetJobProcessor>();
 			services.AddTransient<DelayedJobProcessor>();
-			services.AddTransient<RecurringJobProcessor>();
+			services.AddTransient<CronJobProcessor>();
 
 			var options = new JobsOptions();
 			configure(options);

@@ -8,17 +8,17 @@ using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class RecurringJobProcessor : IProcessor
+	public class CronJobProcessor : IProcessor
 	{
 		private ComputedCronJobsElector _cronJobsElector = new ComputedCronJobsElector();
-		private ILogger<RecurringJobProcessor> _logger;
+		private ILogger<CronJobProcessor> _logger;
 
-		public RecurringJobProcessor(ILogger<RecurringJobProcessor> logger)
+		public CronJobProcessor(ILogger<CronJobProcessor> logger)
 		{
 			_logger = logger;
 		}
 
-		public override string ToString() => nameof(RecurringJobProcessor);
+		public override string ToString() => nameof(CronJobProcessor);
 
 		public void Process(ProcessingContext context)
 		{

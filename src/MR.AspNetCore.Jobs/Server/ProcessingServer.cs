@@ -74,7 +74,7 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_provider.GetService<FireAndForgetJobProcessor>(),
 				_provider.GetService<DelayedJobProcessor>(),
-				_provider.GetService<RecurringJobProcessor>()
+				_provider.GetService<CronJobProcessor>()
 			};
 		}
 	}
