@@ -12,7 +12,6 @@ addons:
     - zlib1g
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
-  - chmod +x ./build/build.sh
   - chmod +x ./build/ci-install.sh
   - ./build/ci-install.sh
 mono:
@@ -22,6 +21,7 @@ os:
   - osx
 osx_image: xcode7.1
 script:
-  - ./build/build.sh
+  - chmod +x ./build.sh
+  - ./build.sh
 env:
   - BUILDING_ON_PLATFORM=unix
