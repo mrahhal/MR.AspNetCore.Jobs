@@ -21,12 +21,11 @@
 		<Assemblies Include="MR.AspNetCore.Jobs" />
 		<Assemblies Include="MR.AspNetCore.Jobs.SqlServer" />
 		<TestAssemblies Include="MR.AspNetCore.Jobs.Tests" />
-		<TestAssemblies Include="MR.AspNetCore.Jobs.SqlServer.Tests"
-									 Condition="'$(OS)' != 'Unix'" />
+		<TestAssemblies Include="MR.AspNetCore.Jobs.SqlServer.Tests" Condition="'$(OS)' != 'Unix'" />
 	</ItemGroup>
 	<Import Project="Build.tasks" />
 
-	<Target Name="GenerateVersionInfo" BeforeTargets="Build">
+	<Target Name="GenerateVersionInfo" BeforeTargets="Build" Condition="'$(OS)' != 'Unix'">
 		<CreateStamp>
 			<Output TaskParameter="Stamp" PropertyName="Stamp" />
 		</CreateStamp>
@@ -43,7 +42,7 @@
 										Replace="$(Replace)" />
 	</Target>
 
-	<Target Name="ResetVersions" AfterTargets="Package">
+	<Target Name="ResetVersions" AfterTargets="Package" Condition="'$(OS)' != 'Unix'">
 		<PropertyGroup>
 			<Find>{
   "version": ".+"</Find>
@@ -82,21 +81,21 @@
 			Command="dotnet test" />
 	</Target>
 
-	<Target Name="Package" DependsOnTargets="Build;Test">
+	<Target Name="Package" DependsOnTargets="Build;Test" Condition="'$(OS)' != 'Unix'">
 		<MakeDir Directories="$(RootDir)artifacts/packages" />
 		<Exec
 			WorkingDirectory="$(RootDir)/src/%(Assemblies.Identity)/"
 			Command="dotnet pack -o $(RootDir)artifacts/bin/%(Assemblies.Identity)/Release/" />
 	</Target>
 
-	<Target Name="CopyPackages" AfterTargets="Package">
+	<Target Name="CopyPackages" AfterTargets="Package" Condition="'$(OS)' != 'Unix'">
 		<ItemGroup>
 			<Packages Include="$(RootDir)artifacts/bin/%(Assemblies.Identity)/Release/*.nupkg" />
 		</ItemGroup>
 		<Copy SourceFiles="@(Packages)" DestinationFolder="$(PackageOutputDir)" />
 	</Target>
 
-	<Target Name="PrintVersion">
+	<Target Name="PrintVersion" Condition="'$(OS)' != 'Unix'">
 		<Message Importance="High" Text="Built version: $(InfoVersion)" />
 	</Target>
 </Project>
