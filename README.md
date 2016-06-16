@@ -14,6 +14,10 @@ Jobs integrates well with Asp.Net Core and its dependency injection system with 
     - Cron: These are cron jobs that execute regularly at certain points in time (for example daily or monthly).
 - Jobs are persisted so that whenever you schedule a job it's guaranteed to be executed at some point in the future even if the application restarts and stays offline for days.
 
+## Adapters
+
+- `MR.AspNetCore.Jobs.SqlServer`: Microsoft's Sql Server.
+
 ## Getting started
 
 ### Configuration
@@ -71,6 +75,23 @@ _jobsManager.Enqueue(() => ..., TimeSpan.FromMinutes(1));
 First, we'll have to create a registry that describes all the cron jobs we want to run:
 
 ```cs
+public class FooJob : IJob
+{
+    ILogger<FooJob> _logger;
+
+    // This is injectable so make sure you add FooJob to DI.
+    public FooJob(ILogger<FooJob> logger)
+    {
+        _logger = logger;
+    }
+
+    public Task ExecuteAsync()
+    {
+        // Do stuff
+        _logger.LogInformation("FooJob is executing!");
+    }
+}
+
 public class SomeCronJobRegistry : CronJobRegistry
 {
     public SomeCronJobRegistry()
