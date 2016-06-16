@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build;Test;Package;PrintVersion" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
-		<Major>1</Major>
-		<Minor>0</Minor>
+		<Major>0</Major>
+		<Minor>1</Minor>
 		<Patch>0</Patch>
 		<Quality></Quality>
 
