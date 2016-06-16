@@ -55,12 +55,12 @@ namespace MR.AspNetCore.Jobs.Server
 								sp.Stop();
 								fetched.RemoveFromQueue();
 								_logger.LogInformation(
-									$"Executed a job successfully. Took: {sp.Elapsed.TotalSeconds} secs.");
+									$"Job executed succesfully. Took: {sp.Elapsed.TotalSeconds} secs.");
 							}
-							catch
+							catch (Exception ex)
 							{
 								_logger.LogWarning(
-									$"Failed to execute a job. Requeuing.");
+									$"Failed to execute a job: \"{ex.Message}\". Requeuing.");
 								fetched.Requeue();
 								throw;
 							}
