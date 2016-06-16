@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.ExpressionUtil;
 
 namespace MR.AspNetCore.Jobs
@@ -15,6 +14,8 @@ namespace MR.AspNetCore.Jobs
 			if (type == null) throw new ArgumentNullException(nameof(type));
 			if (method == null) throw new ArgumentNullException(nameof(method));
 			if (args == null) throw new ArgumentNullException(nameof(args));
+
+			Validate(type, method, args.Length);
 
 			Type = type;
 			Method = method;
@@ -37,14 +38,13 @@ namespace MR.AspNetCore.Jobs
 				throw new ArgumentException("Expression body should be of type `MethodCallExpression`", nameof(methodCall));
 			}
 
-			Type type;
-
+			var type = default(Type);
 			if (callExpression.Object != null)
 			{
 				var objectValue = GetExpressionValue(callExpression.Object);
 				if (objectValue == null)
 				{
-					throw new InvalidOperationException("Expression object should be not null.");
+					throw new InvalidOperationException("Expression object should not be null.");
 				}
 
 				type = objectValue.GetType();
@@ -78,11 +78,8 @@ namespace MR.AspNetCore.Jobs
 
 		private static void Validate(
 			Type type,
-			string typeParameterName,
 			MethodInfo method,
-			string methodParameterName,
-			int argumentCount,
-			string argumentParameterName)
+			int argumentCount)
 		{
 			if (!method.IsPublic)
 			{
@@ -102,13 +99,8 @@ namespace MR.AspNetCore.Jobs
 			if (!method.DeclaringType.IsAssignableFrom(type))
 			{
 				throw new ArgumentException(
-					String.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
-					typeParameterName);
-			}
-
-			if (typeof(Task).IsAssignableFrom(method.ReturnType))
-			{
-				throw new NotSupportedException("Async methods are not supported. Please make them synchronous before using them in background.");
+					string.Format("The type `{0}` must be derived from the `{1}` type.", method.DeclaringType, type),
+					nameof(type));
 			}
 
 			var parameters = method.GetParameters();
@@ -117,21 +109,14 @@ namespace MR.AspNetCore.Jobs
 			{
 				throw new ArgumentException(
 					"Argument count must be equal to method parameter count.",
-					argumentParameterName);
+					"args");
 			}
 
 			foreach (var parameter in parameters)
 			{
-				if (parameter.IsOut)
+				if (parameter.IsOut || parameter.ParameterType.IsByRef)
 				{
-					throw new NotSupportedException(
-						"Output parameters are not supported: there is no guarantee that specified method will be invoked inside the same process.");
-				}
-
-				if (parameter.ParameterType.IsByRef)
-				{
-					throw new NotSupportedException(
-						"Parameters, passed by reference, are not supported: there is no guarantee that specified method will be invoked inside the same process.");
+					throw new NotSupportedException("out and ref parameters are not supported.");
 				}
 			}
 		}
