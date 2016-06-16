@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -13,7 +14,7 @@ namespace MR.AspNetCore.Jobs
 
 		public object Create(Type type)
 		{
-			return _provider.GetService(type);
+			return _provider.GetRequiredService(type);
 		}
 	}
 }
