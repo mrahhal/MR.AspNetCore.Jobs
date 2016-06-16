@@ -21,8 +21,6 @@ install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then DOTNET_SDK_URL=https://go.microsoft.com/fwlink/?LinkID=798404; else DOTNET_SDK_URL=https://go.microsoft.com/fwlink/?LinkID=798405; fi
   - curl -L "$DOTNET_SDK_URL" | tar -xzv -C "$DOTNET_INSTALL_DIR"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
-mono:
-  - 4.0.5
 os:
   - linux
   - osx
@@ -32,3 +30,5 @@ script:
   - ./build.sh
 env:
   - DOTNET_SDK_URL=https://go.microsoft.com/fwlink/?LinkID=798405
+notifications:
+  email: false
