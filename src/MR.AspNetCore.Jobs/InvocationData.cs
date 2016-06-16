@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -65,23 +63,11 @@ namespace MR.AspNetCore.Jobs
 			var serializedArguments = new List<string>(arguments.Count);
 			foreach (var argument in arguments)
 			{
-				string value = null;
-
+				var value = default(string);
 				if (argument != null)
 				{
-					if (argument is DateTime)
-					{
-						value = ((DateTime)argument).ToString("o", CultureInfo.InvariantCulture);
-					}
-					else
-					{
-						value = Helper.ToJson(argument);
-					}
+					value = Helper.ToJson(argument);
 				}
-
-				// Logic, related to optional parameters and their default values,
-				// can be skipped, because it is impossible to omit them in
-				// lambda-expressions (leads to a compile-time error).
 
 				serializedArguments.Add(value);
 			}
@@ -109,34 +95,7 @@ namespace MR.AspNetCore.Jobs
 
 		private static object DeserializeArgument(string argument, Type type)
 		{
-			object value;
-			try
-			{
-				value = argument != null
-					? Helper.FromJson(argument, type)
-					: null;
-			}
-			catch (Exception jsonException)
-			{
-				if (type == typeof(object))
-				{
-					// Special case for handling object types, because string can not
-					// be converted to object type.
-					value = argument;
-				}
-				else
-				{
-					try
-					{
-						value = JsonConvert.DeserializeObject(argument, type);
-					}
-					catch (Exception)
-					{
-						throw jsonException;
-					}
-				}
-			}
-			return value;
+			return argument != null ? Helper.FromJson(argument, type) : null;
 		}
 
 		private static IEnumerable<MethodInfo> GetAllMethods(Type type)

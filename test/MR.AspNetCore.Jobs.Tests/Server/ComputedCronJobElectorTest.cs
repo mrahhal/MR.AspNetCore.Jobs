@@ -5,7 +5,7 @@ using Xunit;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class ComputedCronJobsElectorTest
+	public class ComputedCronJobElectorTest
 	{
 		[Fact]
 		public void Elect_OldJobsThatDidntGetToExecuteComesOutFirst()
@@ -67,6 +67,6 @@ namespace MR.AspNetCore.Jobs.Server
 			(result.Next - baseTime).TotalMinutes.Should().Be(2);
 		}
 
-		private ComputedCronJobsElector Create() => new ComputedCronJobsElector();
+		private ComputedCronJobElector Create() => new ComputedCronJobElector();
 	}
 }

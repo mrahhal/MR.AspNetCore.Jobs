@@ -10,7 +10,7 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class CronJobProcessor : IProcessor
 	{
-		private ComputedCronJobsElector _cronJobsElector = new ComputedCronJobsElector();
+		private ComputedCronJobElector _cronJobsElector = new ComputedCronJobElector();
 		private ILogger<CronJobProcessor> _logger;
 
 		public CronJobProcessor(ILogger<CronJobProcessor> logger)

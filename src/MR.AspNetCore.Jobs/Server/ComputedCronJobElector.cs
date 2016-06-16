@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class ComputedCronJobsElector
+	public class ComputedCronJobElector
 	{
 		public ComputedCronJob Elect(IEnumerable<ComputedCronJob> jobs, DateTime? baseTime = null)
 		{
