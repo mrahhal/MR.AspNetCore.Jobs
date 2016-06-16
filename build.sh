@@ -1,1 +1,1 @@
-mono build/Build.proj /p:BuildType=Release
+xbuild build/Build.proj /p:BuildType=Release

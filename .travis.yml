@@ -31,5 +31,4 @@ script:
   - chmod +x ./build.sh
   - ./build.sh
 env:
-  - BUILDING_ON_PLATFORM=unix
-  - DOTNET_SDK_URL=https://go.microsoft.com/fwlink/?LinkID=798405
+  - BUILDING_ON_PLATFORM=unix DOTNET_SDK_URL=https://go.microsoft.com/fwlink/?LinkID=798405
