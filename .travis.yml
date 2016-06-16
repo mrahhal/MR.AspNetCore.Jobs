@@ -38,7 +38,7 @@ install:
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 
 mono:
-  - 4.0.5
+  - latest
 script:
   - chmod +x ./build.sh
   - ./build.sh
