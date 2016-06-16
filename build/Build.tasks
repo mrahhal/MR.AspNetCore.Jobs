@@ -3,7 +3,7 @@
 	<UsingTask
 		TaskName="RegexTransform"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyName="Microsoft.Build.Tasks">
 		<ParameterGroup>
 			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
 			<Find Required="true" />
@@ -34,7 +34,7 @@
 	<UsingTask
 		TaskName="RegexFind"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyName="Microsoft.Build.Tasks">
 		<ParameterGroup>
 			<FilePath ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
 			<Find Required="true" />
@@ -58,7 +58,7 @@
 	<UsingTask
 		TaskName="AssemblyInfo"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyName="Microsoft.Build.Tasks">
 		<ParameterGroup>
 			<OutputFile Required="true" />
 			<AssemblyProduct />
@@ -146,7 +146,7 @@
 	<UsingTask
 		TaskName="Time"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyName="Microsoft.Build.Tasks">
 		<ParameterGroup>
 			<Format Required="true" />
 			<FormattedTime Output="true" />
@@ -164,7 +164,7 @@
 	<UsingTask
 		TaskName="CreateStamp"
 		TaskFactory="CodeTaskFactory"
-		AssemblyFile="C:\Windows\Microsoft.NET\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll">
+		AssemblyName="Microsoft.Build.Tasks">
 		<ParameterGroup>
 			<Stamp Output="true" />
 		</ParameterGroup>
