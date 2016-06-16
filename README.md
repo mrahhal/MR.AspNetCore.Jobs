@@ -117,3 +117,7 @@ services.AddJobs(options =>
 ```
 
 After the processing server starts it will know when to execute cron jobs whenever needed without your intervention.
+
+## Samples
+
+- [`Basic`](/samples/Basic): implements Jobs in an Asp.Net Core app.
