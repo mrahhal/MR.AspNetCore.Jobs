@@ -6,11 +6,8 @@ using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
 {
-	public class SqlServerBootstrapper : IBootstrapper
+	public class SqlServerBootstrapper : BootstrapperBase
 	{
-		private JobsOptions _options;
-		private IStorage _storage;
-		private IProcessingServer _server;
 		private IApplicationLifetime _appLifetime;
 
 		public SqlServerBootstrapper(
@@ -18,20 +15,16 @@ namespace MR.AspNetCore.Jobs
 			IStorage storage,
 			IProcessingServer server,
 			IApplicationLifetime appLifetime)
+			: base(options, storage, server)
 		{
-			_options = options;
-			_storage = storage;
-			_server = server;
 			_appLifetime = appLifetime;
 		}
 
-		public void Bootstrap()
+		public override void BootstrapCore()
 		{
-			_storage.Initialize();
-
-			using (var connection = _storage.GetConnection())
+			using (var connection = Storage.GetConnection())
 			{
-				var registry = _options.CronJobRegistry;
+				var registry = Options.CronJobRegistry;
 				var entries = default(CronJobRegistry.Entry[]);
 				var existingJobs = connection.GetCronJobs();
 				if (registry != null &&
@@ -69,8 +62,7 @@ namespace MR.AspNetCore.Jobs
 				}
 			}
 
-			_appLifetime.ApplicationStopping.Register(() => _server.Dispose());
-			_server.Start();
+			_appLifetime.ApplicationStopping.Register(() => Server.Dispose());
 		}
 	}
 }
