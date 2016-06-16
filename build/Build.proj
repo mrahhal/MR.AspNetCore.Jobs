@@ -22,7 +22,7 @@
 		<Assemblies Include="MR.AspNetCore.Jobs.SqlServer" />
 		<TestAssemblies Include="MR.AspNetCore.Jobs.Tests" />
 		<TestAssemblies Include="MR.AspNetCore.Jobs.SqlServer.Tests"
-									 Condition="'$(BUILDING_ON_PLATFORM)' != 'unix'" />
+									 Condition="'$(OS)' != 'Unix'" />
 	</ItemGroup>
 	<Import Project="Build.tasks" />
 
