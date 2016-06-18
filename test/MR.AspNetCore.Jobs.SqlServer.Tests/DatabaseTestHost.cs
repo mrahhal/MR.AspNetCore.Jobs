@@ -1,5 +1,4 @@
 using System.Data.SqlClient;
-using System.Threading;
 using System.Transactions;
 using Dapper;
 
@@ -7,14 +6,11 @@ namespace MR.AspNetCore.Jobs
 {
 	public abstract class DatabaseTestHost : TestHost
 	{
-		private static readonly object GlobalLock = new object();
 		private static bool _sqlObjectInstalled;
 		private TransactionScope _transaction;
 
 		public DatabaseTestHost()
 		{
-			Monitor.Enter(GlobalLock);
-
 			if (!_sqlObjectInstalled)
 			{
 				CreateAndInitializeDatabaseIfNotExists();
@@ -23,21 +19,14 @@ namespace MR.AspNetCore.Jobs
 
 			_transaction = new TransactionScope(
 				TransactionScopeOption.RequiresNew,
-				new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted });
+				new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
+				TransactionScopeAsyncFlowOption.Enabled);
 		}
 
 		public override void Dispose()
 		{
 			base.Dispose();
-
-			try
-			{
-				_transaction.Dispose();
-			}
-			finally
-			{
-				Monitor.Exit(GlobalLock);
-			}
+			_transaction.Dispose();
 		}
 
 		private static void CreateAndInitializeDatabaseIfNotExists()

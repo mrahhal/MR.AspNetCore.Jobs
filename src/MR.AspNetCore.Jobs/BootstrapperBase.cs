@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -23,25 +24,25 @@ namespace MR.AspNetCore.Jobs
 
 		protected IProcessingServer Server { get; }
 
-		public void Bootstrap()
+		public async Task BootstrapAsync()
 		{
-			Storage.Initialize();
-			WorkOutCronJobs();
-			BootstrapCore();
+			await Storage.InitializeAsync();
+			await WorkOutCronJobs();
+			await BootstrapCore();
 			Server.Start();
 		}
 
-		public void WorkOutCronJobs()
+		public async Task WorkOutCronJobs()
 		{
 			var entries = Options.CronJobRegistry?.Build() ?? Enumerable.Empty<CronJobRegistry.Entry>().ToArray();
 			using (var connection = Storage.GetConnection())
 			{
-				var currentJobs = connection.GetCronJobs();
-				WorkOutCronJobsCore(connection, entries, currentJobs);
+				var currentJobs = await connection.GetCronJobsAsync();
+				await WorkOutCronJobsCore(connection, entries, currentJobs);
 			}
 		}
 
-		public virtual void WorkOutCronJobsCore(IStorageConnection connection, CronJobRegistry.Entry[] entries, CronJob[] currentJobs)
+		public virtual async Task WorkOutCronJobsCore(IStorageConnection connection, CronJobRegistry.Entry[] entries, CronJob[] currentJobs)
 		{
 			if (entries.Length != 0)
 			{
@@ -59,13 +60,13 @@ namespace MR.AspNetCore.Jobs
 							Cron = entry.Cron,
 							LastRun = DateTime.MinValue
 						};
-						connection.StoreJob(cronJob);
+						await connection.StoreJobAsync(cronJob);
 					}
 					else
 					{
 						cronJob.TypeName = entry.JobType.AssemblyQualifiedName;
 						cronJob.Cron = entry.Cron;
-						connection.UpdateCronJob(cronJob);
+						await connection.UpdateCronJobAsync(cronJob);
 					}
 				}
 			}
@@ -73,12 +74,10 @@ namespace MR.AspNetCore.Jobs
 			// Delete old jobs
 			foreach (var oldJob in currentJobs.Where(j => !entries.Any(e => e.Name == j.Name)))
 			{
-				connection.RemoveCronJob(oldJob.Name);
+				await connection.RemoveCronJobAsync(oldJob.Name);
 			}
 		}
 
-		public virtual void BootstrapCore()
-		{
-		}
+		public virtual Task BootstrapCore() => Task.FromResult(0);
 	}
 }

@@ -1,4 +1,5 @@
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Client;
 
@@ -16,9 +17,9 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public override string ToString() => nameof(BackgroundJobProcessorBase);
 
-		protected override IFetchedJob FetchNextJobCore(IStorageConnection connection)
+		protected override Task<IFetchedJob> FetchNextJobCoreAsync(IStorageConnection connection)
 		{
-			return connection.FetchNextJob();
+			return connection.FetchNextJobAsync();
 		}
 
 		protected override void OnProcessEnter(ProcessingContext context)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
@@ -10,7 +11,7 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class CronJobProcessor : IProcessor
 	{
-		private ComputedCronJobElector _cronJobsElector = new ComputedCronJobElector();
+		private ComputedCronJobElector _jobElector = new ComputedCronJobElector();
 		private ILogger<CronJobProcessor> _logger;
 
 		public CronJobProcessor(ILogger<CronJobProcessor> logger)
@@ -20,25 +21,26 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public override string ToString() => nameof(CronJobProcessor);
 
-		public void Process(ProcessingContext context)
+		public Task ProcessAsync(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
+			return ProcessCoreAsync(context);
+		}
 
+		private async Task ProcessCoreAsync(ProcessingContext context)
+		{
 			var storage = context.Storage;
-			var jobs = default(CronJob[]);
 
-			using (var connection = storage.GetConnection())
-			{
-				jobs = connection.GetCronJobs();
-			}
-
+			var jobs = await GetJobsAsync(storage);
 			if (!jobs.Any())
 			{
-				// Stop the RecurringJobProcessor
-				_logger.LogInformation("Couldn't find any cron jobs to schedule, cancelling processing.");
+				_logger.LogInformation(
+					"Couldn't find any cron jobs to schedule, cancelling processing of cron jobs.");
 				throw new ProcessingCanceledException();
 			}
-			_logger.LogInformation($"Found {jobs.Length} cron job(s) to schedule.");
+			LogInfoAboutCronJobs(jobs);
+
+			context.ThrowIfStopping();
 
 			var computed = Compute(jobs);
 			while (!context.IsStopping)
@@ -47,24 +49,23 @@ namespace MR.AspNetCore.Jobs.Server
 				var nextJob = ElectNextJob(computed);
 				var due = nextJob.Next;
 				var timeSpan = due - now;
+
 				if (timeSpan.TotalSeconds > 0)
 				{
-					context.Wait(timeSpan);
+					await context.WaitAsync(timeSpan);
 				}
-				if (context.IsStopping)
-				{
-					break;
-				}
+
+				context.ThrowIfStopping();
 
 				using (var scopedContext = context.CreateScope())
 				{
 					var factory = scopedContext.Provider.GetService<IJobFactory>();
-					var job = scopedContext.Provider.GetService(nextJob.JobType) as IJob;
+					var job = (IJob)factory.Create(nextJob.JobType);
 
 					try
 					{
 						var sw = Stopwatch.StartNew();
-						job.ExecuteAsync().GetAwaiter().GetResult();
+						await job.ExecuteAsync();
 						sw.Stop();
 						_logger.LogInformation(
 							"Cron job \"{jobName}\" executed succesfully. Took: {seconds} secs.",
@@ -74,32 +75,42 @@ namespace MR.AspNetCore.Jobs.Server
 					{
 						_logger.LogWarning(
 							$"Failed to execute the cron job \"{nextJob.Job.Name}\": \"{ex.Message}\".");
-						throw;
 					}
 
 					using (var connection = storage.GetConnection())
 					{
 						now = DateTime.UtcNow;
 						nextJob.Update(now);
-						connection.UpdateCronJob(nextJob.Job);
+						await connection.UpdateCronJobAsync(nextJob.Job);
 					}
 				}
 			}
 		}
 
-		private ComputedCronJob[] Compute(IEnumerable<CronJob> jobs)
+		private void LogInfoAboutCronJobs(CronJob[] jobs)
 		{
-			return jobs.Select(CreateComputedCronJob).ToArray();
+			_logger.LogInformation($"Found {jobs.Length} cron job(s) to schedule.");
+			foreach (var job in jobs)
+			{
+				_logger.LogDebug($"Will schedule '{job.Name}' with cron '{job.Cron}'.");
+			}
 		}
+
+		private async Task<CronJob[]> GetJobsAsync(IStorage storage)
+		{
+			using (var connection = storage.GetConnection())
+			{
+				return await connection.GetCronJobsAsync();
+			}
+		}
+
+		private ComputedCronJob[] Compute(IEnumerable<CronJob> jobs)
+			=> jobs.Select(CreateComputedCronJob).ToArray();
 
 		private ComputedCronJob CreateComputedCronJob(CronJob job)
-		{
-			return new ComputedCronJob(job);
-		}
+			=> new ComputedCronJob(job);
 
 		private ComputedCronJob ElectNextJob(IEnumerable<ComputedCronJob> jobs)
-		{
-			return _cronJobsElector.Elect(jobs);
-		}
+			=> _jobElector.Elect(jobs);
 	}
 }

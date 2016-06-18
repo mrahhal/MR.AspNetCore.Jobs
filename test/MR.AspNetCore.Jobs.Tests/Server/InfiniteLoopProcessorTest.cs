@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace MR.AspNetCore.Jobs.Server
@@ -5,20 +8,23 @@ namespace MR.AspNetCore.Jobs.Server
 	public class InfiniteLoopProcessorTest
 	{
 		[Fact]
-		public void Process_ThrowingProcessingCanceledException_Returns()
+		public async Task Process_ThrowingProcessingCanceledException_Returns()
 		{
 			// Arrange
+			var services = new ServiceCollection();
+			services.AddLogging();
+			var loggerFactory = services.BuildServiceProvider().GetService<ILoggerFactory>();
 			var inner = new ThrowsProcessingCanceledExceptionProcessor();
-			var p = new InfiniteLoopProcessor(inner);
+			var p = new InfiniteLoopProcessor(inner, loggerFactory);
 			var context = new ProcessingContext();
 
 			// Act
-			p.Process(context);
+			await p.ProcessAsync(context);
 		}
 
 		private class ThrowsProcessingCanceledExceptionProcessor : IProcessor
 		{
-			public void Process(ProcessingContext context)
+			public Task ProcessAsync(ProcessingContext context)
 			{
 				throw new ProcessingCanceledException();
 			}

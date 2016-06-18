@@ -9,7 +9,7 @@ namespace MR.AspNetCore.Jobs
 		{
 			var provider = app.ApplicationServices;
 			var bootstrapper = provider.GetRequiredService<IBootstrapper>();
-			bootstrapper.Bootstrap();
+			bootstrapper.BootstrapAsync();
 		}
 	}
 }

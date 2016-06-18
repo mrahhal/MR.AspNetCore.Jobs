@@ -39,6 +39,8 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public bool IsStopping => CancellationToken.IsCancellationRequested;
 
+		public void ThrowIfStopping() => CancellationToken.ThrowIfCancellationRequested();
+
 		public ProcessingContext CreateScope()
 		{
 			var n = new ProcessingContext(this);
@@ -78,7 +80,6 @@ namespace MR.AspNetCore.Jobs.Server
 		public static async Task<bool> WaitOneAsync(this WaitHandle handle, TimeSpan timeout)
 		{
 			RegisteredWaitHandle registeredHandle = null;
-			var tokenRegistration = default(CancellationTokenRegistration);
 			try
 			{
 				var tcs = new TaskCompletionSource<bool>();
@@ -94,7 +95,6 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				if (registeredHandle != null)
 					registeredHandle.Unregister(null);
-				tokenRegistration.Dispose();
 			}
 		}
 	}

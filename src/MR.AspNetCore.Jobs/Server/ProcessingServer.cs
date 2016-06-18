@@ -7,23 +7,26 @@ using Microsoft.Extensions.Logging;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class ProcessingServer : IProcessingServer, IProcessor, IDisposable
+	public class ProcessingServer : IProcessingServer, IDisposable
 	{
 		private CancellationTokenSource _cts;
-		private Task _mainTask;
+		private Task _compositeTask;
 		private IProcessor[] _processors;
 		private ILogger<ProcessingServer> _logger;
 		private ProcessingContext _context;
 		private IStorage _storage;
 		private IServiceProvider _provider;
+		private ILoggerFactory _loggerFactory;
 
 		public ProcessingServer(
 			IServiceProvider provider,
 			IStorage storage,
+			ILoggerFactory loggerFactory,
 			ILogger<ProcessingServer> logger)
 		{
 			_provider = provider;
 			_storage = storage;
+			_loggerFactory = loggerFactory;
 			_logger = logger;
 			_cts = new CancellationTokenSource();
 		}
@@ -39,23 +42,10 @@ namespace MR.AspNetCore.Jobs.Server
 				_storage,
 				_cts.Token);
 
-			_mainTask = Wrap(this).CreateTask(_context, _logger);
-		}
-
-		public void Dispose()
-		{
-			_cts.Cancel();
-			_mainTask.Wait(60000);
-		}
-
-		public void Process(ProcessingContext context)
-		{
-			var tasks = _processors
-				.Select(Wrap)
-				.Select(p => p.CreateTask(context, _logger))
-				.ToArray();
-
-			Task.WaitAll(tasks);
+			var processorTasks = _processors
+				.Select(p => Infinite(p))
+				.Select(p => p.ProcessAsync(_context));
+			_compositeTask = Task.WhenAll(processorTasks);
 		}
 
 		public void Pulse(PulseKind kind)
@@ -63,9 +53,21 @@ namespace MR.AspNetCore.Jobs.Server
 			_context.Pulse(kind);
 		}
 
-		private IProcessor Wrap(IProcessor processor)
+		public void Dispose()
 		{
-			return new InfiniteLoopProcessor(new AutomaticRetryProcessor(processor));
+			_cts.Cancel();
+			try
+			{
+				_compositeTask.Wait(60000);
+			}
+			catch (AggregateException ex) when (ex.InnerExceptions[0] is OperationCanceledException)
+			{
+			}
+		}
+
+		private IProcessor Infinite(IProcessor inner)
+		{
+			return new InfiniteLoopProcessor(inner, _loggerFactory);
 		}
 
 		private IProcessor[] GetProcessors()

@@ -34,7 +34,7 @@ namespace MR.AspNetCore.Jobs
 		}
 
 		[Fact]
-		public void Bootstrap_CallsStorage_Initialize()
+		public async Task Bootstrap_CallsStorage_Initialize()
 		{
 			// Arrange
 			_services.AddSingleton(new JobsOptions());
@@ -42,14 +42,14 @@ namespace MR.AspNetCore.Jobs
 			var bootstrapper = provider.GetService<SqlServerBootstrapper>();
 
 			// Act
-			bootstrapper.Bootstrap();
+			await bootstrapper.BootstrapAsync();
 
 			// Assert
-			_mockStorage.Verify(s => s.Initialize());
+			_mockStorage.Verify(s => s.InitializeAsync());
 		}
 
 		[Fact]
-		public void Bootstrap_CallsProcessingServer_Start()
+		public async Task Bootstrap_CallsProcessingServer_Start()
 		{
 			// Arrange
 			_services.AddSingleton(new JobsOptions());
@@ -57,47 +57,47 @@ namespace MR.AspNetCore.Jobs
 			var bootstrapper = provider.GetService<SqlServerBootstrapper>();
 
 			// Act
-			bootstrapper.Bootstrap();
+			await bootstrapper.BootstrapAsync();
 
 			// Assert
 			_mockProcessingServer.Verify(s => s.Start());
 		}
 
 		[Fact]
-		public void Bootstrap_UpdatesCronJobs()
+		public async Task Bootstrap_UpdatesCronJobs()
 		{
 			// Arrange
 			_services.AddSingleton(
 				CreateOptionsWithRegistry(new BazCronJobRegistry()));
-			_mockStorageConnection.Setup(m => m.GetCronJobs())
-				.Returns(GetCronJobsFromRegistry(new FooCronJobRegistry()));
+			_mockStorageConnection.Setup(m => m.GetCronJobsAsync())
+				.ReturnsAsync(GetCronJobsFromRegistry(new FooCronJobRegistry()));
 			var provider = _services.BuildServiceProvider();
 			var bootstrapper = provider.GetService<SqlServerBootstrapper>();
 
 			// Act
-			bootstrapper.Bootstrap();
+			await bootstrapper.BootstrapAsync();
 
 			// Assert
 			_mockStorageConnection
-				.Verify(m => m.UpdateCronJob(It.Is<CronJob>(j => j.Name == nameof(FooJob))), Times.Once());
+				.Verify(m => m.UpdateCronJobAsync(It.Is<CronJob>(j => j.Name == nameof(FooJob))), Times.Once());
 		}
 
 		[Fact]
-		public void Bootstrap_RemovesOldCronJobs()
+		public async Task Bootstrap_RemovesOldCronJobs()
 		{
 			// Arrange
 			_services.AddSingleton(
 				CreateOptionsWithRegistry(new BarCronJobRegistry()));
-			_mockStorageConnection.Setup(m => m.GetCronJobs())
-				.Returns(GetCronJobsFromRegistry(new FooCronJobRegistry()));
+			_mockStorageConnection.Setup(m => m.GetCronJobsAsync())
+				.ReturnsAsync(GetCronJobsFromRegistry(new FooCronJobRegistry()));
 			var provider = _services.BuildServiceProvider();
 			var bootstrapper = provider.GetService<SqlServerBootstrapper>();
 
 			// Act
-			bootstrapper.Bootstrap();
+			await bootstrapper.BootstrapAsync();
 
 			// Assert
-			_mockStorageConnection.Verify(m => m.RemoveCronJob(nameof(FooJob)), Times.Once());
+			_mockStorageConnection.Verify(m => m.RemoveCronJobAsync(nameof(FooJob)), Times.Once());
 		}
 
 		private CronJob[] GetCronJobsFromRegistry(CronJobRegistry registry)

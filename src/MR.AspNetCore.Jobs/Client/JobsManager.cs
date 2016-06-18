@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -21,41 +22,41 @@ namespace MR.AspNetCore.Jobs.Client
 			_server = server;
 		}
 
-		public void Enqueue(Expression<Action> methodCall)
+		public async Task EnqueueAsync(Expression<Action> methodCall)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
 			var method = MethodInvocation.FromExpression(methodCall);
-			EnqueueCore(null, method);
+			await EnqueueCore(null, method);
 			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
-		public void Enqueue<T>(Expression<Action<T>> methodCall)
+		public async Task EnqueueAsync<T>(Expression<Action<T>> methodCall)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
 			var method = MethodInvocation.FromExpression(methodCall);
-			EnqueueCore(null, method);
+			await EnqueueCore(null, method);
 			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
-		public void Enqueue(Expression<Action> methodCall, DateTimeOffset due)
+		public Task EnqueueAsync(Expression<Action> methodCall, DateTimeOffset due)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
 			var method = MethodInvocation.FromExpression(methodCall);
-			EnqueueCore(due.UtcDateTime, method);
+			return EnqueueCore(due.UtcDateTime, method);
 		}
 
-		public void Enqueue<T>(Expression<Action<T>> methodCall, DateTimeOffset due)
+		public Task EnqueueAsync<T>(Expression<Action<T>> methodCall, DateTimeOffset due)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
 			var method = MethodInvocation.FromExpression(methodCall);
-			EnqueueCore(due.UtcDateTime, method);
+			return EnqueueCore(due.UtcDateTime, method);
 		}
 
-		private void EnqueueCore(DateTime? due, MethodInvocation method)
+		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
 
@@ -67,7 +68,7 @@ namespace MR.AspNetCore.Jobs.Client
 
 			using (var connection = _storage.GetConnection())
 			{
-				connection.StoreJob(job);
+				await connection.StoreJobAsync(job);
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using MR.AspNetCore.Jobs.Server;
 
@@ -17,9 +18,10 @@ namespace MR.AspNetCore.Jobs
 			_appLifetime = appLifetime;
 		}
 
-		public override void BootstrapCore()
+		public override Task BootstrapCore()
 		{
 			_appLifetime.ApplicationStopping.Register(() => Server.Dispose());
+			return Task.FromResult(0);
 		}
 	}
 }

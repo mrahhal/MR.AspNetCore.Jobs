@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.Client;
 using MR.AspNetCore.Jobs.Models;
 
@@ -6,29 +7,29 @@ namespace MR.AspNetCore.Jobs
 {
 	public interface IStorageConnection : IDisposable
 	{
-		void StoreJob(DelayedJob job);
+		Task StoreJobAsync(DelayedJob job);
 
-		void StoreJob(CronJob job);
+		Task StoreJobAsync(CronJob job);
 
-		void UpdateCronJob(CronJob job);
+		Task UpdateCronJobAsync(CronJob job);
 
-		IFetchedJob FetchNextJob();
+		Task<IFetchedJob> FetchNextJobAsync();
 
-		IFetchedJob FetchNextDelayedJob(DateTime from, DateTime to);
+		Task<IFetchedJob> FetchNextDelayedJobAsync(DateTime from, DateTime to);
 
-		CronJob[] GetCronJobs();
+		Task<CronJob[]> GetCronJobsAsync();
 
-		CronJob GetCronJobByName(string name);
+		Task<CronJob> GetCronJobByNameAsync(string name);
 
-		void RemoveCronJob(string name);
+		Task RemoveCronJobAsync(string name);
 	}
 
 	public static class JobStorageConnectionExtensions
 	{
-		public static IFetchedJob FetchNextDelayedJob(this IStorageConnection @this, DateTime to)
-			=> @this.FetchNextDelayedJob(DateTime.MinValue, to);
+		public static Task<IFetchedJob> FetchNextDelayedJob(this IStorageConnection @this, DateTime to)
+			=> @this.FetchNextDelayedJobAsync(DateTime.MinValue, to);
 
-		public static IFetchedJob FetchNextDelayedJob(this IStorageConnection @this)
-			=> @this.FetchNextDelayedJob(DateTime.MinValue, DateTime.UtcNow);
+		public static Task<IFetchedJob> FetchNextDelayedJob(this IStorageConnection @this)
+			=> @this.FetchNextDelayedJobAsync(DateTime.MinValue, DateTime.UtcNow);
 	}
 }

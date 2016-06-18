@@ -1,6 +1,12 @@
 ﻿{
   "version": "1.0.0-*",
 
+  "buildOptions": {
+    "copyToOutput": {
+      "include": [ "xunit.runner.json" ]
+    }
+  },
+
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc3-*",
     "FluentAssertions": "4.2.2",

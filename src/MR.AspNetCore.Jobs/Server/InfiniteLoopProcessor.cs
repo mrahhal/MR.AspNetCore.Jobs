@@ -1,28 +1,40 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
 namespace MR.AspNetCore.Jobs.Server
 {
 	public class InfiniteLoopProcessor : IProcessor
 	{
 		private IProcessor _inner;
+		private ILogger _logger;
 
-		public InfiniteLoopProcessor(IProcessor inner)
+		public InfiniteLoopProcessor(
+			IProcessor inner,
+			ILoggerFactory loggerFactory)
 		{
 			_inner = inner;
+			_logger = loggerFactory.CreateLogger<InfiniteLoopProcessor>();
 		}
 
 		public override string ToString() => _inner.ToString();
 
-		public void Process(ProcessingContext context)
+		public async Task ProcessAsync(ProcessingContext context)
 		{
-			try
+			while (!context.IsStopping)
 			{
-				while (!context.IsStopping)
+				try
 				{
-					_inner.Process(context);
+					await _inner.ProcessAsync(context);
 				}
-			}
-			catch (ProcessingCanceledException)
-			{
-				return;
+				catch (ProcessingCanceledException)
+				{
+					return;
+				}
+				catch (Exception ex)
+				{
+					_logger.LogWarning($"Prcessor '{_inner.ToString()}' failed: '{ex.Message}'. Retrying...");
+				}
 			}
 		}
 	}

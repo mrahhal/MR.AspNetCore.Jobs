@@ -22,7 +22,7 @@ namespace Basic.Controllers
 		public IActionResult Index()
 		{
 			_logger.LogInformation("Enqueuing a job and having it execute after 5 secs.");
-			_jobs.Enqueue<FooService>(
+			_jobs.EnqueueAsync<FooService>(
 				fooService => fooService.LogSomething("Executing after a delay."),
 				TimeSpan.FromSeconds(5));
 			return View();
@@ -31,7 +31,7 @@ namespace Basic.Controllers
 		public IActionResult About()
 		{
 			_logger.LogInformation("Enqueuing a job and having it execute immediately.");
-			_jobs.Enqueue<FooService>(
+			_jobs.EnqueueAsync<FooService>(
 				fooService => fooService.LogSomething("Executing immediately (in the background)."));
 			return View();
 		}

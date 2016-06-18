@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Client;
 
@@ -10,7 +11,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 		}
 
-		protected override IFetchedJob FetchNextJobCore(IStorageConnection connection)
+		protected override Task<IFetchedJob> FetchNextJobCoreAsync(IStorageConnection connection)
 		{
 			return connection.FetchNextDelayedJob();
 		}

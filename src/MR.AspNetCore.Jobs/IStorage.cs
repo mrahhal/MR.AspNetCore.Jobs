@@ -1,8 +1,10 @@
+using System.Threading.Tasks;
+
 namespace MR.AspNetCore.Jobs
 {
 	public interface IStorage
 	{
-		void Initialize();
+		Task InitializeAsync();
 		IStorageConnection GetConnection();
 	}
 }

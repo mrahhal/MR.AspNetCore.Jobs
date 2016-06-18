@@ -20,7 +20,7 @@ namespace MR.AspNetCore.Jobs
 			_loggerFactory = loggerFactory;
 		}
 
-		public void Initialize()
+		public Task InitializeAsync()
 		{
 			UseConnection(connection =>
 			{
@@ -28,6 +28,7 @@ namespace MR.AspNetCore.Jobs
 					connection,
 					_loggerFactory.CreateLogger(typeof(SqlServerObjectsInstaller)));
 			});
+			return Task.FromResult(0);
 		}
 
 		public IStorageConnection GetConnection() => new SqlServerStorageConnection(this);

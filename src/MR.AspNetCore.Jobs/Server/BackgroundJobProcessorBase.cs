@@ -19,10 +19,14 @@ namespace MR.AspNetCore.Jobs.Server
 			_logger = logger;
 		}
 
-		public void Process(ProcessingContext context)
+		public Task ProcessAsync(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
+			return ProcessCoreAsync(context);
+		}
 
+		public async Task ProcessCoreAsync(ProcessingContext context)
+		{
 			OnProcessEnter(context);
 
 			try
@@ -31,7 +35,9 @@ namespace MR.AspNetCore.Jobs.Server
 				using (var connection = storage.GetConnection())
 				{
 					var fetched = default(IFetchedJob);
-					while (!context.IsStopping && (fetched = FetchNextJobCore(connection)) != null)
+					while (
+						!context.IsStopping &&
+						(fetched = await FetchNextJobCoreAsync(connection)) != null)
 					{
 						using (fetched)
 						using (var scopedContext = context.CreateScope())
@@ -52,7 +58,10 @@ namespace MR.AspNetCore.Jobs.Server
 								var sp = Stopwatch.StartNew();
 								var result =
 									method.Method.Invoke(instance, method.Args.ToArray()) as Task;
-								result?.GetAwaiter().GetResult();
+								if (result != null)
+								{
+									await result;
+								}
 								sp.Stop();
 								fetched.RemoveFromQueue();
 								_logger.LogInformation(
@@ -83,7 +92,7 @@ namespace MR.AspNetCore.Jobs.Server
 			return context.CancellationToken;
 		}
 
-		protected abstract IFetchedJob FetchNextJobCore(IStorageConnection connection);
+		protected abstract Task<IFetchedJob> FetchNextJobCoreAsync(IStorageConnection connection);
 
 		protected virtual void OnProcessEnter(ProcessingContext context)
 		{
