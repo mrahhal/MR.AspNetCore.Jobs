@@ -68,13 +68,14 @@ namespace MR.AspNetCore.Jobs.Server
 						await job.ExecuteAsync();
 						sw.Stop();
 						_logger.LogInformation(
-							"Cron job \"{jobName}\" executed succesfully. Took: {seconds} secs.",
+							"Cron job '{jobName}' executed succesfully. Took: {seconds} secs.",
 							nextJob.Job.Name, sw.Elapsed.TotalSeconds);
 					}
 					catch (Exception ex)
 					{
 						_logger.LogWarning(
-							$"Failed to execute the cron job \"{nextJob.Job.Name}\": \"{ex.Message}\".");
+							$"Cron job '{{jobName}}' failed to execute: '{ex.Message}'.",
+							nextJob.Job.Name);
 					}
 
 					using (var connection = storage.GetConnection())
