@@ -1,7 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MR.AspNetCore.Jobs.Client;
 
 namespace MR.AspNetCore.Jobs.Server
 {

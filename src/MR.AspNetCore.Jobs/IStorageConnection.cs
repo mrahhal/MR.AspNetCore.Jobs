@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using MR.AspNetCore.Jobs.Client;
 using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
 {

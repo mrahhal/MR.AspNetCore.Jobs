@@ -4,8 +4,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
-using MR.AspNetCore.Jobs.Client;
 using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
 {

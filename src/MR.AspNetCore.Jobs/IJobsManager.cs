@@ -2,7 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace MR.AspNetCore.Jobs.Client
+namespace MR.AspNetCore.Jobs
 {
 	public interface IJobsManager
 	{

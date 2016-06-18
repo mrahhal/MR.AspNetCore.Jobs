@@ -2,7 +2,7 @@
 using Basic.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MR.AspNetCore.Jobs.Client;
+using MR.AspNetCore.Jobs;
 
 namespace Basic.Controllers
 {

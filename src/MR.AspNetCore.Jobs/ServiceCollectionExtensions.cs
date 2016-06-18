@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using MR.AspNetCore.Jobs.Client;
 using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs

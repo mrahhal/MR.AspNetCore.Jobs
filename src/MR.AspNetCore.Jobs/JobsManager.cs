@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
-namespace MR.AspNetCore.Jobs.Client
+namespace MR.AspNetCore.Jobs
 {
 	public class JobsManager : IJobsManager
 	{

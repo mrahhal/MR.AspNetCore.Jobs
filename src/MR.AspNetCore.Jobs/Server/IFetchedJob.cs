@@ -1,7 +1,7 @@
 using System;
 using MR.AspNetCore.Jobs.Models;
 
-namespace MR.AspNetCore.Jobs.Client
+namespace MR.AspNetCore.Jobs.Server
 {
 	public interface IFetchedJob : IDisposable
 	{
