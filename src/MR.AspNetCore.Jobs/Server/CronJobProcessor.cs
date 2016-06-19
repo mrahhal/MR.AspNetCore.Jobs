@@ -36,7 +36,7 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_logger.LogInformation(
 					"Couldn't find any cron jobs to schedule, cancelling processing of cron jobs.");
-				throw new ProcessingCanceledException();
+				throw new OperationCanceledException();
 			}
 			LogInfoAboutCronJobs(jobs);
 
