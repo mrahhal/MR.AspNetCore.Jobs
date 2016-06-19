@@ -17,6 +17,11 @@ namespace MR.AspNetCore.Jobs
 		Task EnqueueAsync<T>(Expression<Action<T>> methodCall);
 
 		/// <summary>
+		/// Enqueues a job that will be executed some time in the future.
+		/// </summary>
+		Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall);
+
+		/// <summary>
 		/// Enqueues a job that will be executed at the given moment of time.
 		/// </summary>
 		Task EnqueueAsync(Expression<Action> methodCall, DateTimeOffset due);
@@ -25,6 +30,11 @@ namespace MR.AspNetCore.Jobs
 		/// Enqueues a job that will be executed at the given moment of time.
 		/// </summary>
 		Task EnqueueAsync<T>(Expression<Action<T>> methodCall, DateTimeOffset due);
+
+		/// <summary>
+		/// Enqueues a job that will be executed at the given moment of time.
+		/// </summary>
+		Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall, DateTimeOffset due);
 	}
 
 	public static class JobsManagerExtensions

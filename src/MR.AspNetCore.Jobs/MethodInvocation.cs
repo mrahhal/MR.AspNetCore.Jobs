@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Threading.Tasks;
 using MR.AspNetCore.Jobs.ExpressionUtil;
 
 namespace MR.AspNetCore.Jobs
@@ -31,7 +32,29 @@ namespace MR.AspNetCore.Jobs
 		public static MethodInvocation FromExpression(Expression<Action> methodCall)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+			return FromExpressionCore(methodCall);
+		}
 
+		public static MethodInvocation FromExpression<TType>(Expression<Action<TType>> methodCall)
+		{
+			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+			return FromExpressionCore<TType>(methodCall);
+		}
+
+		public static MethodInvocation FromExpression(Expression<Func<Task>> methodCall)
+		{
+			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+			return FromExpressionCore(methodCall);
+		}
+
+		public static MethodInvocation FromExpression<TType>(Expression<Func<TType, Task>> methodCall)
+		{
+			var callExpression = methodCall.Body as MethodCallExpression;
+			return FromExpressionCore<TType>(methodCall);
+		}
+
+		private static MethodInvocation FromExpressionCore(LambdaExpression methodCall)
+		{
 			var callExpression = methodCall.Body as MethodCallExpression;
 			if (callExpression == null)
 			{
@@ -60,7 +83,7 @@ namespace MR.AspNetCore.Jobs
 				GetExpressionValues(callExpression.Arguments));
 		}
 
-		public static MethodInvocation FromExpression<TType>(Expression<Action<TType>> methodCall)
+		private static MethodInvocation FromExpressionCore<TType>(LambdaExpression methodCall)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 

@@ -33,7 +33,7 @@ namespace Basic.Controllers
 		{
 			_logger.LogInformation("Enqueuing a job and having it execute immediately.");
 			await _jobs.EnqueueAsync<FooService>(
-				fooService => fooService.LogSomething("Executing immediately (in the background)."));
+				fooService => fooService.LogSomethingAsync("Executing immediately (in the background)."));
 			return View();
 		}
 

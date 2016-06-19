@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Basic.Models;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +19,13 @@ namespace Basic.Services
 
 		public void LogSomething(string message)
 		{
-			_logger.LogInformation($"Logging something: \"{message}\".");
+			_logger.LogInformation($"Logging something: '{message}'.");
+		}
+
+		public async Task LogSomethingAsync(string message)
+		{
+			await Task.Delay(100);
+			_logger.LogInformation($"Logging something async: '{message}'.");
 		}
 	}
 }

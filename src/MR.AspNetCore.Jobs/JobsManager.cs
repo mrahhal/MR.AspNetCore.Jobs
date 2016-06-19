@@ -40,6 +40,15 @@ namespace MR.AspNetCore.Jobs
 			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
+		public async Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall)
+		{
+			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+
+			var method = MethodInvocation.FromExpression(methodCall);
+			await EnqueueCore(null, method);
+			_server.Pulse(PulseKind.BackgroundJobEnqueued);
+		}
+
 		public Task EnqueueAsync(Expression<Action> methodCall, DateTimeOffset due)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
@@ -49,6 +58,14 @@ namespace MR.AspNetCore.Jobs
 		}
 
 		public Task EnqueueAsync<T>(Expression<Action<T>> methodCall, DateTimeOffset due)
+		{
+			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
+
+			var method = MethodInvocation.FromExpression(methodCall);
+			return EnqueueCore(due.UtcDateTime, method);
+		}
+
+		public Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall, DateTimeOffset due)
 		{
 			if (methodCall == null) throw new ArgumentNullException(nameof(methodCall));
 
