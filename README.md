@@ -20,6 +20,7 @@ Jobs integrates well with Asp.Net Core and its dependency injection system with 
     - Delayed: These are jobs that need to be executed after a certain delay (minimally).
     - Cron: These are cron jobs that execute regularly at certain points in time (for example daily or monthly).
 - Jobs are persisted so that whenever you schedule a job it's guaranteed to be executed at some point in the future even if the application restarts and stays offline for days.
+- Asynchronous processing pipeline: all jobs can be asynchronous.
 
 ## Adapters
 
@@ -55,9 +56,9 @@ public class HomeController : Controller
         _jobsManager = jobsManager;
     }
 
-    public IActionResult Home()
+    public async Task<IActionResult> Home()
     {
-        _jobsManager.Enqueue(...);
+        await _jobsManager.EnqueueAsync(...);
         return View();
     }
 }
@@ -66,17 +67,19 @@ public class HomeController : Controller
 ### Fire and forget jobs
 ```cs
 // Execute a static method.
-_jobsManager.Enqueue(() => SomeStaticClass.SomeStaticMethod("foo"));
+await _jobsManager.EnqueueAsync(() => SomeStaticClass.SomeStaticMethod("foo"));
 
 // Execute an instance method. FooService will be created using DI so it is injectable.
-_jobsManager.Enqueue<FooService>(service => service.SomeMethod("foo"));
+await _jobsManager.EnqueueAsync<FooService>(service => service.SomeMethod("foo"));
 ```
 
 ### Delayed jobs
 ```cs
 // Execute after 1 minute.
-_jobsManager.Enqueue(() => ..., TimeSpan.FromMinutes(1));
+await _jobsManager.EnqueueAsync(() => ..., TimeSpan.FromMinutes(1));
 ```
+
+All methods (fire and forget + delayed) can be async (return Task) and they'll be correctly awaited.
 
 ### Cron jobs
 First, we'll have to create a registry that describes all the cron jobs we want to run:
@@ -96,6 +99,7 @@ public class FooJob : IJob
     {
         // Do stuff
         _logger.LogInformation("FooJob is executing!");
+        return Task.FromResult(0);
     }
 }
 
@@ -111,6 +115,8 @@ public class SomeCronJobRegistry : CronJobRegistry
     }
 }
 ```
+
+> You can extend `JobSync` if your job is inherently synchronous.
 
 Then, we tell Jobs to use this registry:
 ```cs
