@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<Major>0</Major>
 		<Minor>2</Minor>
-		<Patch>0</Patch>
+		<Patch>1</Patch>
 		<Quality></Quality>
 
 		<Version>$(Major).$(Minor).$(Patch)</Version>
