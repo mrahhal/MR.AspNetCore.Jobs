@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Basic.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,19 +20,19 @@ namespace Basic.Controllers
 			_logger = logger;
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
 			_logger.LogInformation("Enqueuing a job and having it execute after 5 secs.");
-			_jobs.EnqueueAsync<FooService>(
+			await _jobs.EnqueueAsync<FooService>(
 				fooService => fooService.LogSomething("Executing after a delay."),
 				TimeSpan.FromSeconds(5));
 			return View();
 		}
 
-		public IActionResult About()
+		public async Task<IActionResult> About()
 		{
 			_logger.LogInformation("Enqueuing a job and having it execute immediately.");
-			_jobs.EnqueueAsync<FooService>(
+			await _jobs.EnqueueAsync<FooService>(
 				fooService => fooService.LogSomething("Executing immediately (in the background)."));
 			return View();
 		}

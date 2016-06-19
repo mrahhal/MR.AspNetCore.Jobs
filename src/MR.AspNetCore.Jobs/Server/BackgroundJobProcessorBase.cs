@@ -79,7 +79,7 @@ namespace MR.AspNetCore.Jobs.Server
 				}
 
 				var token = GetTokenToWaitOn(context);
-				token.WaitHandle.WaitOne(_pollingDelay);
+				await token.WaitHandle.WaitOneAsync(_pollingDelay);
 			}
 			finally
 			{
