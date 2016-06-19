@@ -21,14 +21,14 @@ namespace MR.AspNetCore.Jobs.Server
 			return connection.FetchNextJobAsync();
 		}
 
-		protected override void OnProcessEnter(ProcessingContext context)
+		protected override void OnStepEnter(ProcessingContext context)
 		{
 			_cts = new CancellationTokenSource();
 			_linkedCts = CreateLinked(context);
 			context.Pulsed += HandlePulse;
 		}
 
-		protected override void OnProcessExit(ProcessingContext context)
+		protected override void OnStepExit(ProcessingContext context)
 		{
 			context.Pulsed -= HandlePulse;
 			_linkedCts.Dispose();
