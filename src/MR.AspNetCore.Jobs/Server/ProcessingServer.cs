@@ -60,8 +60,13 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_compositeTask.Wait(60000);
 			}
-			catch (AggregateException ex) when (ex.InnerExceptions[0] is OperationCanceledException)
+			catch (AggregateException ex)
 			{
+				if (!(ex.InnerExceptions[0] is OperationCanceledException))
+				{
+					_logger.LogWarning(
+						$"Expected an OperationCanceledException, but found '{ex.InnerExceptions[0].Message}'.");
+				}
 			}
 		}
 
