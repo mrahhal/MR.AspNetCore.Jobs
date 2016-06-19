@@ -43,7 +43,7 @@ namespace MR.AspNetCore.Jobs.Server
 				_cts.Token);
 
 			var processorTasks = _processors
-				.Select(p => Infinite(p))
+				.Select(p => InfiniteRetry(p))
 				.Select(p => p.ProcessAsync(_context));
 			_compositeTask = Task.WhenAll(processorTasks);
 		}
@@ -65,9 +65,9 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 		}
 
-		private IProcessor Infinite(IProcessor inner)
+		private IProcessor InfiniteRetry(IProcessor inner)
 		{
-			return new InfiniteLoopProcessor(inner, _loggerFactory);
+			return new InfiniteRetryProcessor(inner, _loggerFactory);
 		}
 
 		private IProcessor[] GetProcessors()

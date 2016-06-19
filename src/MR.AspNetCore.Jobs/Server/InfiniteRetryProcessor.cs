@@ -4,17 +4,17 @@ using Microsoft.Extensions.Logging;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class InfiniteLoopProcessor : IProcessor
+	public class InfiniteRetryProcessor : IProcessor
 	{
 		private IProcessor _inner;
 		private ILogger _logger;
 
-		public InfiniteLoopProcessor(
+		public InfiniteRetryProcessor(
 			IProcessor inner,
 			ILoggerFactory loggerFactory)
 		{
 			_inner = inner;
-			_logger = loggerFactory.CreateLogger<InfiniteLoopProcessor>();
+			_logger = loggerFactory.CreateLogger<InfiniteRetryProcessor>();
 		}
 
 		public override string ToString() => _inner.ToString();
@@ -26,6 +26,7 @@ namespace MR.AspNetCore.Jobs.Server
 				try
 				{
 					await _inner.ProcessAsync(context);
+					return;
 				}
 				catch (OperationCanceledException)
 				{
