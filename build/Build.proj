@@ -2,8 +2,8 @@
 <Project DefaultTargets="Build;Test;Package;PrintVersion" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<Major>0</Major>
-		<Minor>2</Minor>
-		<Patch>1</Patch>
+		<Minor>3</Minor>
+		<Patch>0</Patch>
 		<Quality></Quality>
 
 		<Version>$(Major).$(Minor).$(Patch)</Version>
@@ -63,10 +63,10 @@
 	<Target Name="RestorePackages" DependsOnTargets="Clean">
 		<Exec
 			WorkingDirectory="$(RootDir)/src/%(Assemblies.Identity)/"
-			Command="dotnet restore --quiet" />
+			Command="dotnet restore" />
 		<Exec
 			WorkingDirectory="$(RootDir)/test/%(TestAssemblies.Identity)/"
-			Command="dotnet restore --quiet" />
+			Command="dotnet restore" />
 	</Target>
 
 	<Target Name="Clean">
