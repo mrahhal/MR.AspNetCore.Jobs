@@ -8,10 +8,10 @@
   },
 
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc3-*",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "FluentAssertions": "4.2.2",
     "MR.AspNetCore.Jobs.SqlServer": "*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-beta2-build3300"
   },
 
   "testRunner": "xunit",
