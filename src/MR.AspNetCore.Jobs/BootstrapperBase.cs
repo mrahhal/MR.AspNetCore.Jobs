@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -8,14 +9,18 @@ namespace MR.AspNetCore.Jobs
 {
 	public abstract class BootstrapperBase : IBootstrapper
 	{
+		private IApplicationLifetime _appLifetime;
+
 		public BootstrapperBase(
 			JobsOptions options,
 			IStorage storage,
-			IProcessingServer server)
+			IProcessingServer server,
+			IApplicationLifetime appLifetime)
 		{
 			Options = options;
 			Storage = storage;
 			Server = server;
+			_appLifetime = appLifetime;
 		}
 
 		protected JobsOptions Options { get; }
@@ -28,7 +33,7 @@ namespace MR.AspNetCore.Jobs
 		{
 			await Storage.InitializeAsync();
 			await WorkOutCronJobs();
-			await BootstrapCore();
+			await BootstrapCoreAsync();
 			Server.Start();
 		}
 
@@ -78,6 +83,10 @@ namespace MR.AspNetCore.Jobs
 			}
 		}
 
-		public virtual Task BootstrapCore() => Task.FromResult(0);
+		public virtual Task BootstrapCoreAsync()
+		{
+			_appLifetime.ApplicationStopping.Register(() => Server.Dispose());
+			return Task.FromResult(0);
+		}
 	}
 }
