@@ -19,7 +19,7 @@ install:
   - curl -L "$DOTNET_SDK_URL" | tar -xzv -C "$DOTNET_INSTALL_DIR"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; brew install openssl; brew link --force openssl; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo install_name_tool -add_rpath /usr/local/opt/openssl/lib /usr/local/share/dotnet/shared/Microsoft.NETCore.App/1.0.0/System.Security.Cryptography.Native.dylib; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then sudo install_name_tool -add_rpath /usr/local/opt/openssl/lib $DOTNET_INSTALL_DIR/shared/Microsoft.NETCore.App/1.0.0/System.Security.Cryptography.Native.dylib; fi
 os:
   - linux
   - osx
