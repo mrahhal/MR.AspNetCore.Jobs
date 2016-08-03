@@ -33,6 +33,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			_linkedCts.Dispose();
 			_cts.Dispose();
+			_linkedCts = _cts = null;
 		}
 
 		protected override CancellationToken GetTokenToWaitOn(ProcessingContext context)
@@ -49,7 +50,10 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public override void Pulse()
 		{
-			_cts.Cancel();
+			if (_cts != null)
+			{
+				_cts.Cancel();
+			}
 		}
 	}
 }
