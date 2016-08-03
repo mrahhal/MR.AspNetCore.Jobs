@@ -35,8 +35,10 @@ namespace MR.AspNetCore.Jobs.Server
 		public void Start()
 		{
 			_logger.LogInformation("Starting the processing server.");
-			_processors = GetProcessors();
-			_logger.LogInformation($"Initiating {_processors.Length} processors.");
+			var processorCount = Environment.ProcessorCount;
+			_logger.LogInformation($"Detected {processorCount} machine processor(s).");
+			_processors = GetProcessors(processorCount);
+			_logger.LogInformation($"Initiating {_processors.Length} job processors.");
 
 			_context = new ProcessingContext(
 				_provider,
@@ -77,13 +79,18 @@ namespace MR.AspNetCore.Jobs.Server
 			return new InfiniteRetryProcessor(inner, _loggerFactory);
 		}
 
-		private IProcessor[] GetProcessors()
+		private IProcessor[] GetProcessors(int processorCount)
 		{
-			return new IProcessor[]
+			var processors = new List<IProcessor>();
+
+			for (int i = 0; i < processorCount; i++)
 			{
-				_provider.GetService<DelayedJobProcessor>(),
-				_provider.GetService<CronJobProcessor>()
-			};
+				processors.Add(_provider.GetService<DelayedJobProcessor>());
+			}
+
+			processors.Add(_provider.GetService<CronJobProcessor>());
+
+			return processors.ToArray();
 		}
 	}
 }
