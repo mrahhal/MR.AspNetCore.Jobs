@@ -9,8 +9,10 @@ namespace MR.AspNetCore.Jobs.Server
 		private CancellationTokenSource _cts;
 		private CancellationTokenSource _linkedCts;
 
-		public DelayedJobProcessor(ILogger<DelayedJobProcessor> logger)
-			: base(logger)
+		public DelayedJobProcessor(
+			JobsOptions options,
+			ILogger<DelayedJobProcessor> logger)
+			: base(options, logger)
 		{
 		}
 

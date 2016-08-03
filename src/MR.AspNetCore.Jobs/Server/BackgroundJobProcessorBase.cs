@@ -10,12 +10,17 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public abstract class BackgroundJobProcessorBase : IProcessor
 	{
-		private readonly TimeSpan _pollingDelay = TimeSpan.FromSeconds(15);
+		private readonly TimeSpan _pollingDelay;
+		protected JobsOptions _options;
 		protected ILogger _logger;
 
-		public BackgroundJobProcessorBase(ILogger logger)
+		public BackgroundJobProcessorBase(
+			JobsOptions options,
+			ILogger logger)
 		{
+			_options = options;
 			_logger = logger;
+			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 
 		public Task ProcessAsync(ProcessingContext context)

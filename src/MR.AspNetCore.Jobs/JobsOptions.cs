@@ -8,6 +8,8 @@ namespace MR.AspNetCore.Jobs
 
 		public CronJobRegistry CronJobRegistry { get; private set; }
 
+		public int PollingDelay { get; set; } = 15;
+
 		public void UseCronJobRegistry<T>()
 			where T : CronJobRegistry
 		{

@@ -37,6 +37,9 @@ namespace Basic
 
 				// Use the cron jobs registry
 				options.UseCronJobRegistry<BasicCronJobRegistry>();
+
+				// Configure the polling delay used when polling the storage (in seconds)
+				options.PollingDelay = 10;
 			});
 
 			// Add jobs to DI
