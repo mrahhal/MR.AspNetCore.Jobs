@@ -56,6 +56,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void Dispose()
 		{
+			_logger.LogInformation("Shutting down Jobs processing server.");
 			_cts.Cancel();
 			try
 			{
