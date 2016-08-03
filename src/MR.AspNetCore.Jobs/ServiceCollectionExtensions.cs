@@ -15,7 +15,6 @@ namespace MR.AspNetCore.Jobs
 			services.AddSingleton<IProcessingServer, ProcessingServer>();
 
 			// Processors
-			services.AddTransient<FireAndForgetJobProcessor>();
 			services.AddTransient<DelayedJobProcessor>();
 			services.AddTransient<CronJobProcessor>();
 

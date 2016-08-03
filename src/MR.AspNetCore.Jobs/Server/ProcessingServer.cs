@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,7 +80,6 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			return new IProcessor[]
 			{
-				_provider.GetService<FireAndForgetJobProcessor>(),
 				_provider.GetService<DelayedJobProcessor>(),
 				_provider.GetService<CronJobProcessor>()
 			};

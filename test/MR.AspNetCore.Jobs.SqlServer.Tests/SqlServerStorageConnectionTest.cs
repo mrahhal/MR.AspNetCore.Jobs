@@ -90,7 +90,7 @@ namespace MR.AspNetCore.Jobs
 			var fixture = Create();
 
 			// Act
-			var result = await fixture.FetchNextJobAsync();
+			var result = await fixture.FetchNextDelayedJobAsync();
 
 			// Assert
 			result.Should().BeNull();
@@ -109,12 +109,12 @@ namespace MR.AspNetCore.Jobs
 			await fixture.StoreJobAsync(model);
 
 			// Act
-			var result = await fixture.FetchNextJobAsync();
+			var result = await fixture.FetchNextDelayedJobAsync();
 			result.RemoveFromQueue();
 			result.Dispose();
 
 			// Assert
-			(await fixture.FetchNextJobAsync()).Should().BeNull();
+			(await fixture.FetchNextDelayedJobAsync()).Should().BeNull();
 		}
 
 		// Requeuing won't work directly here because we're using a transaction scope
@@ -147,7 +147,7 @@ namespace MR.AspNetCore.Jobs
 			var fixture = Create();
 
 			// Act
-			var result = await fixture.FetchNextDelayedJob();
+			var result = await fixture.FetchNextDelayedJobAsync();
 
 			// Assert
 			result.Should().BeNull();
@@ -171,12 +171,12 @@ namespace MR.AspNetCore.Jobs
 			});
 
 			// Act
-			var result = await fixture.FetchNextDelayedJob();
+			var result = await fixture.FetchNextDelayedJobAsync();
 			result.RemoveFromQueue();
 			result.Dispose();
 
 			// Assert
-			(await fixture.FetchNextJobAsync()).Should().BeNull();
+			(await fixture.FetchNextDelayedJobAsync()).Should().BeNull();
 		}
 
 		//[Fact]

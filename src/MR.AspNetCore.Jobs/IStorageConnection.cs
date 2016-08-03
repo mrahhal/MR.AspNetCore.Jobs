@@ -13,8 +13,6 @@ namespace MR.AspNetCore.Jobs
 
 		Task UpdateCronJobAsync(CronJob job);
 
-		Task<IFetchedJob> FetchNextJobAsync();
-
 		Task<IFetchedJob> FetchNextDelayedJobAsync(DateTime from, DateTime to);
 
 		Task<CronJob[]> GetCronJobsAsync();
@@ -26,10 +24,10 @@ namespace MR.AspNetCore.Jobs
 
 	public static class JobStorageConnectionExtensions
 	{
-		public static Task<IFetchedJob> FetchNextDelayedJob(this IStorageConnection @this, DateTime to)
+		public static Task<IFetchedJob> FetchNextDelayedJobAsync(this IStorageConnection @this, DateTime to)
 			=> @this.FetchNextDelayedJobAsync(DateTime.MinValue, to);
 
-		public static Task<IFetchedJob> FetchNextDelayedJob(this IStorageConnection @this)
+		public static Task<IFetchedJob> FetchNextDelayedJobAsync(this IStorageConnection @this)
 			=> @this.FetchNextDelayedJobAsync(DateTime.MinValue, DateTime.UtcNow);
 	}
 }

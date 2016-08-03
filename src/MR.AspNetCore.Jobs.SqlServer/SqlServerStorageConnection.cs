@@ -83,22 +83,12 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
-		public Task<IFetchedJob> FetchNextJobAsync()
-		{
-			var sql = @"
-				DELETE TOP (1) from Jobs.DelayedJobs with (readpast, updlock, rowlock)
-				output DELETED.*
-				WHERE Due IS NULL";
-
-			return FetchNextDelayedJobCoreAsync(sql);
-		}
-
 		public Task<IFetchedJob> FetchNextDelayedJobAsync(DateTime from, DateTime to)
 		{
 			var sql = @"
 				DELETE TOP (1) from Jobs.DelayedJobs with (readpast, updlock, rowlock)
 				output DELETED.*
-				WHERE Due >= @from AND Due < @to";
+				WHERE Due IS NULL OR (Due >= @from AND Due < @to)";
 
 			return FetchNextDelayedJobCoreAsync(sql, new { from = NormalizeDateTime(from), to });
 		}
