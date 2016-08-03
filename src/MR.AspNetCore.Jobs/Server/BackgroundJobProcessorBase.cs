@@ -23,6 +23,8 @@ namespace MR.AspNetCore.Jobs.Server
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 
+		public bool Waiting { get; private set; }
+
 		public Task ProcessAsync(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
@@ -40,14 +42,20 @@ namespace MR.AspNetCore.Jobs.Server
 
 					context.ThrowIfStopping();
 
+					Waiting = true;
 					var token = GetTokenToWaitOn(context);
 					await token.WaitHandle.WaitOneAsync(_pollingDelay);
 				}
 				finally
 				{
+					Waiting = false;
 					OnStepExit(context);
 				}
 			}
+		}
+
+		public virtual void Pulse()
+		{
 		}
 
 		private async Task Step(ProcessingContext context)

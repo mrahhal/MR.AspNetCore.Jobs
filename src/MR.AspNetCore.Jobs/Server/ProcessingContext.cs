@@ -8,7 +8,6 @@ namespace MR.AspNetCore.Jobs.Server
 	public class ProcessingContext : IDisposable
 	{
 		private IServiceScope _scope;
-		internal event EventHandler<PulseKind> Pulsed;
 
 		private ProcessingContext(ProcessingContext other)
 		{
@@ -67,11 +66,6 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_scope.Dispose();
 			}
-		}
-
-		internal void Pulse(PulseKind kind)
-		{
-			Pulsed?.Invoke(this, kind);
 		}
 	}
 

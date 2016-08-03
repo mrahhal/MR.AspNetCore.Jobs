@@ -27,12 +27,10 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			_cts = new CancellationTokenSource();
 			_linkedCts = CreateLinked(context);
-			context.Pulsed += HandlePulse;
 		}
 
 		protected override void OnStepExit(ProcessingContext context)
 		{
-			context.Pulsed -= HandlePulse;
 			_linkedCts.Dispose();
 			_cts.Dispose();
 		}
@@ -49,14 +47,9 @@ namespace MR.AspNetCore.Jobs.Server
 				_cts.Token);
 		}
 
-		private void HandlePulse(object sender, PulseKind kind)
+		public override void Pulse()
 		{
-			switch (kind)
-			{
-				case PulseKind.BackgroundJobEnqueued:
-					_cts.Cancel();
-					break;
-			}
+			_cts.Cancel();
 		}
 	}
 }

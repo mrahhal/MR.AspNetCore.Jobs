@@ -18,6 +18,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private IStorage _storage;
 		private IServiceProvider _provider;
 		private ILoggerFactory _loggerFactory;
+		private BackgroundJobProcessorBase[] _backgroundJobProcessors;
 
 		public ProcessingServer(
 			IServiceProvider provider,
@@ -53,7 +54,35 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void Pulse(PulseKind kind)
 		{
-			_context.Pulse(kind);
+			if (!AllProcessorsWaiting())
+			{
+				// Some processor is still executing jobs so no need to pulse.
+				return;
+			}
+
+			// Perf: avoid allocation
+			for (int i = 0; i < _backgroundJobProcessors.Length; i++)
+			{
+				var processor = _backgroundJobProcessors[i];
+				if (processor.Waiting)
+				{
+					processor.Pulse();
+					break;
+				}
+			}
+		}
+
+		private bool AllProcessorsWaiting()
+		{
+			// Perf: avoid allocation
+			for (int i = 0; i < _backgroundJobProcessors.Length; i++)
+			{
+				if (!_backgroundJobProcessors[i].Waiting)
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
 		public void Dispose()
@@ -82,11 +111,14 @@ namespace MR.AspNetCore.Jobs.Server
 		private IProcessor[] GetProcessors(int processorCount)
 		{
 			var processors = new List<IProcessor>();
+			var backgroundJobProcessors = new List<BackgroundJobProcessorBase>(processorCount);
 
 			for (int i = 0; i < processorCount; i++)
 			{
-				processors.Add(_provider.GetService<DelayedJobProcessor>());
+				backgroundJobProcessors.Add(_provider.GetService<DelayedJobProcessor>());
+				_backgroundJobProcessors = backgroundJobProcessors.ToArray();
 			}
+			processors.AddRange(backgroundJobProcessors);
 
 			processors.Add(_provider.GetService<CronJobProcessor>());
 
