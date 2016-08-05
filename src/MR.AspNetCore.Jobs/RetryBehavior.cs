@@ -2,6 +2,9 @@
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// Represents the retry behavior to be used.
+	/// </summary>
 	public class RetryBehavior
 	{
 		public static readonly int DefaultRetryCount;
@@ -29,6 +32,12 @@ namespace MR.AspNetCore.Jobs
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="RetryBehavior"/> class.
+		/// </summary>
+		/// <param name="retry">Whether to retry.</param>
+		/// <param name="retryCount">The maximum retry count.</param>
+		/// <param name="retryInThunk">The retry in function to use.</param>
 		public RetryBehavior(bool retry, int retryCount, Func<int, int> retryInThunk)
 		{
 			if (retry)
@@ -43,10 +52,21 @@ namespace MR.AspNetCore.Jobs
 
 		public Random Random => _random;
 
+		/// <summary>
+		/// Gets whether to retry or disable retrying.
+		/// </summary>
 		public bool Retry { get; }
 
+		/// <summary>
+		/// Gets the maximum retry count.
+		/// </summary>
 		public int RetryCount { get; }
 
+		/// <summary>
+		/// Returns the seconds to delay before retrying again.
+		/// </summary>
+		/// <param name="retries">The current retry count.</param>
+		/// <returns>The seconds to delay.</returns>
 		public int RetryIn(int retries)
 		{
 			return _retryInThunk(retries);

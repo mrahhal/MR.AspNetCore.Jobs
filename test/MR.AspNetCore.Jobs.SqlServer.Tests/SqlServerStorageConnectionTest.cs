@@ -199,35 +199,6 @@ namespace MR.AspNetCore.Jobs
 			result.Should().HaveCount(2);
 		}
 
-		[Fact]
-		public async Task GetCronJobByName()
-		{
-			// Arrange
-			var fixture = Create();
-			var model1 = new CronJob
-			{
-				Cron = Cron.Daily(),
-				Name = "1",
-				TypeName = "foo",
-				LastRun = new DateTime(2000, 1, 1)
-			};
-			var model2 = new CronJob
-			{
-				Cron = Cron.Minutely(),
-				Name = "2",
-				TypeName = "bar",
-				LastRun = new DateTime(2000, 1, 2)
-			};
-			await fixture.StoreCronJobAsync(model1);
-			await fixture.StoreCronJobAsync(model2);
-
-			// Act
-			var result = await fixture.GetCronJobByNameAsync("2");
-
-			// Assert
-			result.Should().NotBeNull();
-		}
-
 		private SqlServerStorageConnection Create()
 		{
 			var services = new ServiceCollection();

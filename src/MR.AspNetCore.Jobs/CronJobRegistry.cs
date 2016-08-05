@@ -5,6 +5,9 @@ using NCrontab;
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// A cron job registry.
+	/// </summary>
 	public abstract class CronJobRegistry
 	{
 		private List<Entry> _entries;
@@ -20,6 +23,13 @@ namespace MR.AspNetCore.Jobs
 			RegisterJob(name, typeof(T), cron, retryBehavior);
 		}
 
+		/// <summary>
+		/// Registers a cron job.
+		/// </summary>
+		/// <param name="name">The name of the job.</param>
+		/// <param name="jobType">The job's type.</param>
+		/// <param name="cron">The cron expression to use.</param>
+		/// <param name="retryBehavior">The <see cref="RetryBehavior"/> to use.</param>
 		protected void RegisterJob(string name, Type jobType, string cron, RetryBehavior retryBehavior = null)
 		{
 			if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException(nameof(cron));

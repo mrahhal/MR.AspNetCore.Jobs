@@ -170,20 +170,6 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
-		public Task<CronJob> GetCronJobByNameAsync(string name)
-		{
-			var sql = @"
-				SELECT * FROM [Jobs].CronJobs
-				WHERE Name = @name";
-
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return
-					(await connection.QueryAsync<CronJob>(sql, new { name }))
-					.FirstOrDefault();
-			});
-		}
-
 		public Task RemoveCronJobAsync(string name)
 		{
 			var sql = @"

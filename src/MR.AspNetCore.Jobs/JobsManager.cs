@@ -6,6 +6,9 @@ using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// The default <see cref="IJobsManager"/>.
+	/// </summary>
 	public class JobsManager : IJobsManager
 	{
 		private JobsOptions _options;

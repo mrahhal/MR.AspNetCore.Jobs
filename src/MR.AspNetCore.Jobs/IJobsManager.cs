@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// Manages delayed jobs.
+	/// </summary>
 	public interface IJobsManager
 	{
 		/// <summary>

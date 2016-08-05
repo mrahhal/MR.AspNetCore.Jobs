@@ -2,6 +2,9 @@ using System.Threading.Tasks;
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// An <see cref="IJob"/> that executes synchronously.
+	/// </summary>
 	public abstract class JobSync : IJob
 	{
 		public Task ExecuteAsync()
@@ -10,6 +13,9 @@ namespace MR.AspNetCore.Jobs
 			return Task.FromResult(0);
 		}
 
+		/// <summary>
+		/// Execute the job.
+		/// </summary>
 		public abstract void Execute();
 	}
 }

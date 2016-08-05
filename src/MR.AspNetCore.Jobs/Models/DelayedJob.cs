@@ -2,6 +2,9 @@ using System;
 
 namespace MR.AspNetCore.Jobs.Models
 {
+	/// <summary>
+	/// Represents a delayed job to be executed at a later time.
+	/// </summary>
 	public class DelayedJob
 	{
 		public DelayedJob()
