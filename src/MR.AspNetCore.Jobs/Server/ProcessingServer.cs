@@ -20,6 +20,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private ILoggerFactory _loggerFactory;
 		private BackgroundJobProcessorBase[] _backgroundJobProcessors;
 		private JobsOptions _options;
+		private bool _disposed;
 
 		public ProcessingServer(
 			IServiceProvider provider,
@@ -91,6 +92,12 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void Dispose()
 		{
+			if (_disposed)
+			{
+				return;
+			}
+			_disposed = true;
+
 			_logger.LogInformation("Shutting down Jobs processing server.");
 			_cts.Cancel();
 			try
