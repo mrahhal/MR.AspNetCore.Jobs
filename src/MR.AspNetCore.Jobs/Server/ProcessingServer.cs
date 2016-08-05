@@ -19,15 +19,18 @@ namespace MR.AspNetCore.Jobs.Server
 		private IServiceProvider _provider;
 		private ILoggerFactory _loggerFactory;
 		private BackgroundJobProcessorBase[] _backgroundJobProcessors;
+		private JobsOptions _options;
 
 		public ProcessingServer(
 			IServiceProvider provider,
 			IStorage storage,
+			JobsOptions options,
 			ILoggerFactory loggerFactory,
 			ILogger<ProcessingServer> logger)
 		{
 			_provider = provider;
 			_storage = storage;
+			_options = options;
 			_loggerFactory = loggerFactory;
 			_logger = logger;
 			_cts = new CancellationTokenSource();
@@ -44,6 +47,7 @@ namespace MR.AspNetCore.Jobs.Server
 			_context = new ProcessingContext(
 				_provider,
 				_storage,
+				_options.CronJobRegistry,
 				_cts.Token);
 
 			var processorTasks = _processors

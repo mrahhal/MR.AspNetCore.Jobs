@@ -16,19 +16,15 @@ namespace MR.AspNetCore.Jobs
 		{
 			// Arrange
 			var fixture = Create();
-			var model = new DelayedJob
-			{
-				Data = "data",
-				Due = new DateTime(2000, 1, 1)
-			};
+			var model = new DelayedJob("data");
 
 			// Act
-			await fixture.StoreJobAsync(model);
+			await fixture.StoreDelayedJobAsync(model, new DateTime(2000, 1, 1));
 
 			// Assert
 			fixture._storage.UseConnection(connection =>
 			{
-				connection.Query<DelayedJob>("SELECT * FROM Jobs.DelayedJobs").Count().Should().NotBe(0);
+				connection.Query<DelayedJob>("SELECT * FROM [Jobs].DelayedJobs").Count().Should().NotBe(0);
 			});
 		}
 
@@ -46,12 +42,12 @@ namespace MR.AspNetCore.Jobs
 			};
 
 			// Act
-			await fixture.StoreJobAsync(model);
+			await fixture.StoreCronJobAsync(model);
 
 			// Assert
 			fixture._storage.UseConnection(connection =>
 			{
-				connection.Query<CronJob>("SELECT * FROM Jobs.CronJobs").Count().Should().NotBe(0);
+				connection.Query<CronJob>("SELECT * FROM [Jobs].CronJobs").Count().Should().NotBe(0);
 			});
 		}
 
@@ -67,7 +63,7 @@ namespace MR.AspNetCore.Jobs
 				TypeName = "foo",
 				LastRun = new DateTime(2000, 1, 1)
 			};
-			await fixture.StoreJobAsync(model);
+			await fixture.StoreCronJobAsync(model);
 			model.LastRun = new DateTime(2001, 1, 1);
 			model.Cron = Cron.Minutely();
 
@@ -77,14 +73,14 @@ namespace MR.AspNetCore.Jobs
 			// Assert
 			fixture._storage.UseConnection(connection =>
 			{
-				var job = connection.Query<CronJob>("SELECT * FROM Jobs.CronJobs").First();
+				var job = connection.Query<CronJob>("SELECT * FROM [Jobs].CronJobs").First();
 				job.LastRun.Should().Be(model.LastRun);
 				job.Cron.Should().Be(model.Cron);
 			});
 		}
 
 		[Fact]
-		public async Task FetchNextJob_NoJobs_ReturnsNull()
+		public async Task FetchNextDelayedJobAsync_NoJobs_ReturnsNull()
 		{
 			// Arrange
 			var fixture = Create();
@@ -97,16 +93,12 @@ namespace MR.AspNetCore.Jobs
 		}
 
 		[Fact]
-		public async Task FetchNextJob_Commit()
+		public async Task FetchNextDelayedJobAsync_Commit()
 		{
 			// Arrange
 			var fixture = Create();
-			var model = new DelayedJob
-			{
-				Data = "data",
-				Due = null
-			};
-			await fixture.StoreJobAsync(model);
+			var model = new DelayedJob("data");
+			await fixture.StoreDelayedJobAsync(model, null);
 
 			// Act
 			var result = await fixture.FetchNextDelayedJobAsync();
@@ -141,34 +133,12 @@ namespace MR.AspNetCore.Jobs
 		//}
 
 		[Fact]
-		public async Task FetchNextDelayedJob_NoJobs_ReturnsNull()
+		public async Task FetchNextDelayedJobAsync_DueMinValue_Commit()
 		{
 			// Arrange
 			var fixture = Create();
-
-			// Act
-			var result = await fixture.FetchNextDelayedJobAsync();
-
-			// Assert
-			result.Should().BeNull();
-		}
-
-		[Fact]
-		public async Task FetchNextDelayedJob_Commit()
-		{
-			// Arrange
-			var fixture = Create();
-			var model = new DelayedJob
-			{
-				Data = "data",
-				Due = DateTime.MinValue
-			};
-			await fixture.StoreJobAsync(model);
-
-			var jobs = fixture._storage.UseConnection(c =>
-			{
-				return c.Query<DelayedJob>("SELECT * FROM Jobs.DelayedJobs").ToArray();
-			});
+			var model = new DelayedJob("data");
+			await fixture.StoreDelayedJobAsync(model, DateTime.MinValue);
 
 			// Act
 			var result = await fixture.FetchNextDelayedJobAsync();
@@ -219,8 +189,8 @@ namespace MR.AspNetCore.Jobs
 				TypeName = "bar",
 				LastRun = new DateTime(2000, 1, 2)
 			};
-			await fixture.StoreJobAsync(model1);
-			await fixture.StoreJobAsync(model2);
+			await fixture.StoreCronJobAsync(model1);
+			await fixture.StoreCronJobAsync(model2);
 
 			// Act
 			var result = await fixture.GetCronJobsAsync();
@@ -248,8 +218,8 @@ namespace MR.AspNetCore.Jobs
 				TypeName = "bar",
 				LastRun = new DateTime(2000, 1, 2)
 			};
-			await fixture.StoreJobAsync(model1);
-			await fixture.StoreJobAsync(model2);
+			await fixture.StoreCronJobAsync(model1);
+			await fixture.StoreCronJobAsync(model2);
 
 			// Act
 			var result = await fixture.GetCronJobByNameAsync("2");

@@ -7,6 +7,7 @@ namespace MR.AspNetCore.Jobs.Server
 	{
 		DelayedJob Job { get; }
 
+		// REVIEW: Shouldn't these be async too?
 		void RemoveFromQueue();
 		void Requeue();
 	}

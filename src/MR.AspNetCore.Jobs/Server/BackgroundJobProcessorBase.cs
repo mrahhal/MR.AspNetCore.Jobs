@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs.Server
 {
@@ -98,14 +99,47 @@ namespace MR.AspNetCore.Jobs.Server
 						}
 						catch (Exception ex)
 						{
-							_logger.LogWarning(
-								$"Job failed to execute: '{ex.Message}'. Requeuing.");
-							fetched.Requeue();
-							throw;
+							var shouldRetry = await UpdateJobForRetryAsync(instance, job, connection);
+							if (shouldRetry)
+							{
+								_logger.LogWarning(
+									$"Job failed to execute: '{ex.Message}'. Requeuing for another retry.");
+								fetched.Requeue();
+							}
+							else
+							{
+								_logger.LogWarning(
+									$"Job failed to execute: '{ex.Message}'.");
+								// TODO: Send to DJQ
+							}
 						}
 					}
 				}
 			}
+		}
+
+		private async Task<bool> UpdateJobForRetryAsync(object instance, DelayedJob job, IStorageConnection connection)
+		{
+			var retryBehavior =
+				(instance as IRetryable)?.RetryBehavior ??
+				RetryBehavior.DefaultRetry;
+
+			if (!retryBehavior.Retry)
+			{
+				return false;
+			}
+
+			var now = DateTime.UtcNow;
+			var retries = await connection.GetDelayedJobParameterAsync<int>(job.Id, "Retries") + 1;
+			if (retries >= retryBehavior.RetryCount)
+			{
+				return false;
+			}
+
+			var due = job.Added.AddSeconds(retryBehavior.RetryIn(retries));
+			await connection.SetDelayedJobDue(job.Id, due);
+			await connection.SetDelayedJobParameterAsync(job.Id, "Retries", retries);
+			return true;
 		}
 
 		protected virtual CancellationToken GetTokenToWaitOn(ProcessingContext context)

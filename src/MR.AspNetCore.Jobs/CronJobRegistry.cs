@@ -14,16 +14,18 @@ namespace MR.AspNetCore.Jobs
 			_entries = new List<Entry>();
 		}
 
-		protected void RegisterJob<T>(string name, string cron) where T : IJob
+		protected void RegisterJob<T>(string name, string cron, RetryBehavior retryBehavior = null)
+			where T : IJob
 		{
-			RegisterJob(name, typeof(T), cron);
+			RegisterJob(name, typeof(T), cron, retryBehavior);
 		}
 
-		protected void RegisterJob(string name, Type jobType, string cron)
+		protected void RegisterJob(string name, Type jobType, string cron, RetryBehavior retryBehavior = null)
 		{
 			if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException(nameof(cron));
 			if (jobType == null) throw new ArgumentNullException(nameof(jobType));
 			if (cron == null) throw new ArgumentNullException(nameof(cron));
+			retryBehavior = retryBehavior ?? RetryBehavior.DefaultRetry;
 
 			CrontabSchedule.TryParse(cron);
 
@@ -52,6 +54,8 @@ namespace MR.AspNetCore.Jobs
 			public Type JobType { get; set; }
 
 			public string Cron { get; set; }
+
+			public RetryBehavior RetryBehavior { get; set; }
 		}
 	}
 }

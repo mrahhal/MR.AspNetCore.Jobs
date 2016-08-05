@@ -76,16 +76,11 @@ namespace MR.AspNetCore.Jobs
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
-
-			var job = new DelayedJob()
-			{
-				Due = due,
-				Data = Helper.ToJson(data)
-			};
+			var job = new DelayedJob(Helper.ToJson(data));
 
 			using (var connection = _storage.GetConnection())
 			{
-				await connection.StoreJobAsync(job);
+				await connection.StoreDelayedJobAsync(job, due);
 			}
 		}
 	}

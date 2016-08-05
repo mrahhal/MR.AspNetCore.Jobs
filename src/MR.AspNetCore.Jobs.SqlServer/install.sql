@@ -1,6 +1,6 @@
 SET NOCOUNT ON
 DECLARE @TARGET_SCHEMA_VERSION INT;
-SET @TARGET_SCHEMA_VERSION = 0;
+SET @TARGET_SCHEMA_VERSION = 2;
 
 PRINT 'Installing Jobs SQL objects...';
 
@@ -47,7 +47,8 @@ IF @CURRENT_SCHEMA_VERSION IS NULL
 BEGIN
 	PRINT 'Installing schema version 1';
 
-	-- Create job tables
+	-- DelayedJobs table
+
 	CREATE TABLE [Jobs].[DelayedJobs] (
 		[Id]   NVARCHAR (128) NOT NULL,
 		[Data] NVARCHAR (MAX) NULL,
@@ -56,6 +57,8 @@ BEGIN
 		CONSTRAINT [PK_Jobs.DelayedJobs] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
 	PRINT 'Created table [Jobs].[DelayedJobs]';
+
+	-- CronJobs table
 
 	CREATE TABLE [Jobs].[CronJobs] (
 		[Id]       NVARCHAR (128) NOT NULL,
@@ -69,6 +72,66 @@ BEGIN
 	PRINT 'Created table [Jobs].[DelayedJobs]';
 
 	SET @CURRENT_SCHEMA_VERSION = 1;
+END
+
+IF @CURRENT_SCHEMA_VERSION = 1
+BEGIN
+	PRINT 'Installing schema version 2';
+
+	-- Alter DelayedJobs table
+
+	ALTER TABLE [Jobs].[DelayedJobs] DROP COLUMN [Due]
+
+	ALTER TABLE [Jobs].[DelayedJobs] ADD [Added] DATETIME NOT NULL
+
+	-- DelayedJobDue table
+
+	CREATE TABLE [Jobs].[DelayedJobDue](
+		[Id]           INT IDENTITY(1,1) NOT NULL,
+		[DelayedJobId] NVARCHAR (128)    NOT NULL,
+		[Due]          DATETIME          NULL
+
+		CONSTRAINT [PK_Jobs_DelayedJobDue] PRIMARY KEY CLUSTERED ([Id] ASC)
+	);
+	PRINT 'Created table [Jobs].[DelayedJobDue]';
+
+	ALTER TABLE [Jobs].[DelayedJobDue] ADD CONSTRAINT [FK_Jobs_DelayedJobDue_DelayedJobs] FOREIGN KEY([DelayedJobId])
+		REFERENCES [Jobs].[DelayedJobs] ([Id])
+		ON UPDATE CASCADE
+		ON DELETE CASCADE;
+	PRINT 'Created constraint [FK_Jobs_DelayedJobDue_DelayedJobs]';
+
+	CREATE NONCLUSTERED INDEX [IX_Jobs_DelayedJobDue_JobIdAndDue] ON [Jobs].[DelayedJobDue] (
+		[DelayedJobId] ASC,
+		[Due]          ASC
+	);
+	PRINT 'Created index [IX_Jobs_DelayedJobDue_JobIdAndDue]';
+
+	-- DelayedJobParameters table
+
+	CREATE TABLE [Jobs].[DelayedJobParameters](
+		[Id]           INT IDENTITY(1,1) NOT NULL,
+		[DelayedJobId] NVARCHAR (128)    NOT NULL,
+		[Name]         NVARCHAR(40)      NOT NULL,
+		[Value]        NVARCHAR(max)     NULL,
+
+		CONSTRAINT [PK_Jobs_JobParameters] PRIMARY KEY CLUSTERED ([Id] ASC)
+	);
+	PRINT 'Created table [Jobs].[DelayedJobParameters]';
+
+	ALTER TABLE [Jobs].[DelayedJobParameters] ADD CONSTRAINT [FK_Jobs_DelayedJobParameters_DelayedJobs] FOREIGN KEY([DelayedJobId])
+		REFERENCES [Jobs].[DelayedJobs] ([Id])
+		ON UPDATE CASCADE
+		ON DELETE CASCADE;
+	PRINT 'Created constraint [FK_Jobs_DelayedJobParameters_DelayedJobs]';
+
+	CREATE NONCLUSTERED INDEX [IX_Jobs_DelayedJobParameters_JobIdAndName] ON [Jobs].[DelayedJobParameters] (
+		[DelayedJobId] ASC,
+		[Name]         ASC
+	);
+	PRINT 'Created index [IX_Jobs_DelayedJobParameters_JobIdAndName]';
+
+	SET @CURRENT_SCHEMA_VERSION = 2;
 END
 
 UPDATE [Jobs].[Schema] SET [Version] = @CURRENT_SCHEMA_VERSION
