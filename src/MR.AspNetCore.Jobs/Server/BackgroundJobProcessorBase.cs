@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Util;
 
 namespace MR.AspNetCore.Jobs.Server
 {
@@ -14,6 +15,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private readonly TimeSpan _pollingDelay;
 		protected JobsOptions _options;
 		protected ILogger _logger;
+		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
 
 		public BackgroundJobProcessorBase(
 			JobsOptions options,
@@ -45,7 +47,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 					Waiting = true;
 					var token = GetTokenToWaitOn(context);
-					await token.WaitHandle.WaitOneAsync(_pollingDelay);
+					await WaitHandleEx.WaitAnyAsync(PulseEvent, token.WaitHandle, _pollingDelay);
 				}
 				finally
 				{
@@ -71,7 +73,7 @@ namespace MR.AspNetCore.Jobs.Server
 					using (fetched)
 					using (var scopedContext = context.CreateScope())
 					{
-						var job = fetched.Job;
+						var job = await connection.GetJobAsync(fetched.JobId);
 						var invocationData = Helper.FromJson<InvocationData>(job.Data);
 						var method = invocationData.Deserialize();
 						var factory = scopedContext.Provider.GetService<IJobFactory>();
@@ -118,7 +120,7 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 		}
 
-		private async Task<bool> UpdateJobForRetryAsync(object instance, DelayedJob job, IStorageConnection connection)
+		private async Task<bool> UpdateJobForRetryAsync(object instance, Job job, IStorageConnection connection)
 		{
 			var retryBehavior =
 				(instance as IRetryable)?.RetryBehavior ??
@@ -130,15 +132,19 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 
 			var now = DateTime.UtcNow;
-			var retries = await connection.GetDelayedJobParameterAsync<int>(job.Id, "Retries") + 1;
+			var retries = ++job.Retries;
 			if (retries >= retryBehavior.RetryCount)
 			{
 				return false;
 			}
 
 			var due = job.Added.AddSeconds(retryBehavior.RetryIn(retries));
-			await connection.SetDelayedJobDue(job.Id, due);
-			await connection.SetDelayedJobParameterAsync(job.Id, "Retries", retries);
+			job.Due = due;
+			using (var transaction = connection.CreateTransaction())
+			{
+				transaction.UpdateJob(job);
+				await transaction.CommitAsync();
+			}
 			return true;
 		}
 

@@ -2,7 +2,6 @@ using System;
 using System.Data;
 using System.Threading;
 using Dapper;
-using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs.Server
 {
@@ -16,19 +15,19 @@ namespace MR.AspNetCore.Jobs.Server
 		private readonly object _lockObject = new object();
 
 		public SqlServerFetchedJob(
-			DelayedJob job,
+			int jobId,
 			SqlServerStorage storage,
 			IDbConnection connection,
 			IDbTransaction transaction)
 		{
-			Job = job;
+			JobId = jobId;
 			_storage = storage;
 			_connection = connection;
 			_transaction = transaction;
 			_timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
 		}
 
-		public DelayedJob Job { get; }
+		public int JobId { get; }
 
 		public void RemoveFromQueue()
 		{

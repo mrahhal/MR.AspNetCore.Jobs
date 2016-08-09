@@ -13,39 +13,27 @@ namespace MR.AspNetCore.Jobs
 		// Delayed jobs
 
 		/// <summary>
-		/// Stores a delayed job and associates its due time.
+		/// Stores the job.
 		/// </summary>
 		/// <param name="job">The job to store.</param>
-		/// <param name="Due">The due time to associate the job with.</param>
-		Task StoreDelayedJobAsync(DelayedJob job, DateTime? Due);
+		Task StoreJobAsync(Job job);
 
 		/// <summary>
-		/// Fetches the next delayed job to be executed.
+		/// Returns the job with the given id.
 		/// </summary>
-		Task<IFetchedJob> FetchNextDelayedJobAsync();
+		/// <param name="id">The job's id.</param>
+		Task<Job> GetJobAsync(int id);
 
 		/// <summary>
-		/// Gets a delayed job parameter.
+		/// Fetches the next job to be executed.
 		/// </summary>
-		/// <param name="id">The id of the job.</param>
-		/// <param name="name">The name of the parameter.</param>
-		/// <returns>The value of the parameter.</returns>
-		Task<string> GetDelayedJobParameterAsync(string id, string name);
+		Task<IFetchedJob> FetchNextJobAsync();
 
 		/// <summary>
-		/// Sets a delayed job parameter.
+		/// Gets the next job to be enqueued.
 		/// </summary>
-		/// <param name="id">The id of the job.</param>
-		/// <param name="name">The name of the parameter.</param>
-		/// <param name="value">The value of the parameter.</param>
-		Task SetDelayedJobParameterAsync(string id, string name, string value);
-
-		/// <summary>
-		/// Associates a delayed job with a due time.
-		/// </summary>
-		/// <param name="id">The id of the job.</param>
-		/// <param name="due">The due time to associate the job with.</param>
-		Task SetDelayedJobDue(string id, DateTime? due);
+		/// <returns></returns>
+		Task<Job> GetNextJobToBeEnqueuedAsync();
 
 		// Cron jobs
 
@@ -71,20 +59,12 @@ namespace MR.AspNetCore.Jobs
 		/// </summary>
 		/// <param name="name">The name if the cron job.</param>
 		Task RemoveCronJobAsync(string name);
-	}
 
-	public static class StorageConnectionExtensions
-	{
-		public static Task SetDelayedJobParameterAsync<T>(
-			this IStorageConnection connection, string id, string name, T value)
-		{
-			return connection.SetDelayedJobParameterAsync(id, name, Helper.ToJson(value));
-		}
+		//-----------------------------------------
 
-		public static async Task<T> GetDelayedJobParameterAsync<T>(
-			this IStorageConnection connection, string id, string name)
-		{
-			return Helper.FromJson<T>(await connection.GetDelayedJobParameterAsync(id, name));
-		}
+		/// <summary>
+		/// Creates and returns an <see cref="IStorageTransaction"/>.
+		/// </summary>
+		IStorageTransaction CreateTransaction();
 	}
 }

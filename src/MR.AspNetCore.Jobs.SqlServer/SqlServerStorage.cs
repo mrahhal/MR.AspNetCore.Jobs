@@ -81,7 +81,7 @@ namespace MR.AspNetCore.Jobs
 			}
 		}
 
-		internal void UseTransaction(Action<SqlConnection, SqlTransaction> action)
+		internal void UseTransaction(Action<SqlConnection, SqlTransaction> action, IsolationLevel? isolationLevel = null)
 		{
 			UseTransaction((connection, transaction) =>
 			{
@@ -90,7 +90,16 @@ namespace MR.AspNetCore.Jobs
 			}, null);
 		}
 
-		internal T UseTransaction<T>(Func<SqlConnection, SqlTransaction, T> func, IsolationLevel? isolationLevel)
+		internal Task UseTransactionAsync(Func<SqlConnection, SqlTransaction, Task> func, IsolationLevel? isolationLevel = null)
+		{
+			return UseTransactionAsync(async (connection, transaction) =>
+			{
+				await func(connection, transaction);
+				return true;
+			}, null);
+		}
+
+		internal T UseTransaction<T>(Func<SqlConnection, SqlTransaction, T> func, IsolationLevel? isolationLevel = null)
 		{
 			return UseConnection(connection =>
 			{
@@ -98,6 +107,20 @@ namespace MR.AspNetCore.Jobs
 				using (var transaction = CreateTransaction(connection, isolationLevel))
 				{
 					result = func(connection, transaction);
+					transaction.Commit();
+				}
+				return result;
+			});
+		}
+
+		internal async Task<T> UseTransactionAsync<T>(Func<SqlConnection, SqlTransaction, Task<T>> func, IsolationLevel? isolationLevel = null)
+		{
+			return await UseConnectionAsync(async connection =>
+			{
+				T result;
+				using (var transaction = CreateTransaction(connection, isolationLevel))
+				{
+					result = await func(connection, transaction);
 					transaction.Commit();
 				}
 				return result;

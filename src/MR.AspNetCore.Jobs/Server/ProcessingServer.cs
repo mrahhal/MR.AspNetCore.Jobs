@@ -57,7 +57,7 @@ namespace MR.AspNetCore.Jobs.Server
 			_compositeTask = Task.WhenAll(processorTasks);
 		}
 
-		public void Pulse(PulseKind kind)
+		public void Pulse()
 		{
 			if (!AllProcessorsWaiting())
 			{
@@ -65,16 +65,7 @@ namespace MR.AspNetCore.Jobs.Server
 				return;
 			}
 
-			// Perf: avoid allocation
-			for (int i = 0; i < _backgroundJobProcessors.Length; i++)
-			{
-				var processor = _backgroundJobProcessors[i];
-				if (processor.Waiting)
-				{
-					processor.Pulse();
-					break;
-				}
-			}
+			JobQueuer.PulseEvent.Set();
 		}
 
 		private bool AllProcessorsWaiting()
@@ -132,6 +123,10 @@ namespace MR.AspNetCore.Jobs.Server
 			processors.AddRange(backgroundJobProcessors);
 
 			processors.Add(_provider.GetService<CronJobProcessor>());
+
+			processors.Add(_provider.GetService<JobQueuer>());
+
+			processors.AddRange(_provider.GetServices<IAdditionalProcessor>());
 
 			return processors.ToArray();
 		}

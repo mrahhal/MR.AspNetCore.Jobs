@@ -18,98 +18,70 @@ namespace MR.AspNetCore.Jobs
 			_storage = storage;
 		}
 
-		public async Task StoreDelayedJobAsync(DelayedJob job, DateTime? due)
+		public async Task StoreJobAsync(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
-			due = NormalizeDateTime(due);
+			job.Due = NormalizeDateTime(job.Due);
 
 			var sql = @"
-				INSERT INTO [Jobs].DelayedJobs
-				(Id, Data, Added)
+				INSERT INTO [Jobs].Jobs
+				(Data, Added, Due, ExpiresAt, Retries, StateName)
 				VALUES
-				(@id, @data, @added)
+				(@data, @added, @due, @expiresAt, @retries, @stateName)
 
-				INSERT INTO [Jobs].DelayedJobDue
-				(DelayedJobId, Due)
-				VALUES
-				(@id, @due)";
+				SELECT CAST(SCOPE_IDENTITY() as int)";
 
-			using (var connection = _storage.CreateAndOpenConnection())
-			using (var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted))
+			var id = await _storage.UseConnectionAsync(async connection =>
 			{
-				await connection.ExecuteAsync(sql, new
+				return (await connection.QueryAsync<int>(sql, new
 				{
 					id = job.Id,
 					data = job.Data,
 					added = job.Added,
-					due
-				}, transaction);
-				transaction.Commit();
-			}
+					due = job.Due,
+					expiresAt = job.ExpiresAt,
+					retries = job.Retries,
+					stateName = job.StateName
+				})).Single();
+			});
+			job.Id = id;
 		}
 
-		public Task<IFetchedJob> FetchNextDelayedJobAsync()
+		public Task<Job> GetJobAsync(int id)
 		{
 			var sql = @"
-				DELETE TOP (1) dj OUTPUT DELETED.*
-				FROM [Jobs].DelayedJobs dj
-				WITH (readpast, updlock, rowlock)
-				LEFT OUTER JOIN [Jobs].DelayedJobDue djd ON djd.DelayedJobId = dj.Id
-				WHERE djd.Due IS NULL OR djd.Due < GETUTCDATE()";
+				SELECT * FROM [Jobs].Jobs
+				WHERE Id = @id";
+
+			return _storage.UseConnectionAsync(async connection =>
+			{
+				return (await connection.QueryAsync<Job>(sql, new
+				{
+					id
+				})).FirstOrDefault();
+			});
+		}
+
+		public Task<IFetchedJob> FetchNextJobAsync()
+		{
+			var sql = @"
+				DELETE TOP (1)
+				FROM [Jobs].JobQueue WITH (readpast, updlock, rowlock)
+				OUTPUT DELETED.JobId";
 
 			return FetchNextDelayedJobCoreAsync(sql);
 		}
 
-		public Task<string> GetDelayedJobParameterAsync(string id, string name)
+		public Task<Job> GetNextJobToBeEnqueuedAsync()
 		{
-			if (id == null) throw new ArgumentNullException(nameof(id));
-			if (name == null) throw new ArgumentNullException(nameof(name));
+			var sql = $@"
+				SELECT TOP (1) *
+				FROM [Jobs].Jobs
+				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{States.Schedulued}'";
 
 			return _storage.UseConnectionAsync(async connection =>
 			{
-				return (await connection.QueryAsync<string>(@"
-					SELECT Value FROM [Jobs].DelayedJobParameters WITH (readcommittedlock)
-					WHERE DelayedJobId = @id and Name = @name",
-					new { id = id, name = name })).SingleOrDefault();
-			});
-		}
-
-		public Task SetDelayedJobParameterAsync(string id, string name, string value)
-		{
-			if (id == null) throw new ArgumentNullException(nameof(id));
-			if (name == null) throw new ArgumentNullException(nameof(name));
-
-			return _storage.UseConnectionAsync(connection =>
-			{
-				return connection.ExecuteAsync(@"
-					MERGE [Jobs].DelayedJobParameters WITH (holdlock) AS Target
-					USING (VALUES (@jobId, @name, @value)) AS Source (JobId, Name, Value)
-					ON Target.DelayedJobId = Source.DelayedJobId AND Target.Name = Source.Name
-					WHEN MATCHED THEN UPDATE SET Value = Source.Value
-					WHEN NOT MATCHED THEN INSERT (JobId, Name, Value)
-					VALUES (Source.DelayedJobId, Source.Name, Source.Value)",
-					new { jobId = id, name, value });
-			});
-		}
-
-		public Task SetDelayedJobDue(string id, DateTime? due)
-		{
-			if (id == null) throw new ArgumentNullException(nameof(id));
-
-			due = NormalizeDateTime(due);
-
-			var sql = @"
-				UPDATE [Jobs].DelayedJobDue
-				SET Due = @due
-				WHERE DelayedJobId = @jobId";
-
-			return _storage.UseConnectionAsync(connection =>
-			{
-				return connection.ExecuteAsync(sql, new
-				{
-					jobId = id,
-					due
-				});
+				return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
 			});
 		}
 
@@ -182,6 +154,11 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
+		public IStorageTransaction CreateTransaction()
+		{
+			return new SqlServerStorageTransaction(_storage);
+		}
+
 		public void Dispose()
 		{
 		}
@@ -198,14 +175,14 @@ namespace MR.AspNetCore.Jobs
 
 		private async Task<IFetchedJob> FetchNextDelayedJobCoreAsync(string sql, object args = null)
 		{
-			DelayedJob fetchedJob = null;
+			FetchedJob fetchedJob = null;
 			var connection = _storage.CreateAndOpenConnection();
 			var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 			try
 			{
 				fetchedJob =
-					(await connection.QueryAsync<DelayedJob>(sql, args, transaction))
+					(await connection.QueryAsync<FetchedJob>(sql, args, transaction))
 					.FirstOrDefault();
 			}
 			catch (SqlException)
@@ -224,7 +201,7 @@ namespace MR.AspNetCore.Jobs
 			}
 
 			return new SqlServerFetchedJob(
-				fetchedJob,
+				fetchedJob.JobId,
 				_storage,
 				connection,
 				transaction);

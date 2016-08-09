@@ -16,15 +16,15 @@ namespace MR.AspNetCore.Jobs
 		{
 			// Arrange
 			var fixture = Create();
-			var model = new DelayedJob("data");
+			var model = new Job("data", new DateTime(2000, 1, 1));
 
 			// Act
-			await fixture.StoreDelayedJobAsync(model, new DateTime(2000, 1, 1));
+			await fixture.StoreJobAsync(model);
 
 			// Assert
 			fixture._storage.UseConnection(connection =>
 			{
-				connection.Query<DelayedJob>("SELECT * FROM [Jobs].DelayedJobs").Count().Should().NotBe(0);
+				connection.Query<Job>("SELECT * FROM [Jobs].Jobs").Count().Should().NotBe(0);
 			});
 		}
 
@@ -86,7 +86,7 @@ namespace MR.AspNetCore.Jobs
 			var fixture = Create();
 
 			// Act
-			var result = await fixture.FetchNextDelayedJobAsync();
+			var result = await fixture.FetchNextJobAsync();
 
 			// Assert
 			result.Should().BeNull();
@@ -97,16 +97,21 @@ namespace MR.AspNetCore.Jobs
 		{
 			// Arrange
 			var fixture = Create();
-			var model = new DelayedJob("data");
-			await fixture.StoreDelayedJobAsync(model, null);
+			var model = new Job("data");
+			await fixture.StoreJobAsync(model);
+			using (var t = fixture.CreateTransaction())
+			{
+				t.EnqueueJob(model.Id);
+				await t.CommitAsync();
+			}
 
 			// Act
-			var result = await fixture.FetchNextDelayedJobAsync();
+			var result = await fixture.FetchNextJobAsync();
 			result.RemoveFromQueue();
 			result.Dispose();
 
 			// Assert
-			(await fixture.FetchNextDelayedJobAsync()).Should().BeNull();
+			(await fixture.FetchNextJobAsync()).Should().BeNull();
 		}
 
 		// Requeuing won't work directly here because we're using a transaction scope
@@ -137,16 +142,21 @@ namespace MR.AspNetCore.Jobs
 		{
 			// Arrange
 			var fixture = Create();
-			var model = new DelayedJob("data");
-			await fixture.StoreDelayedJobAsync(model, DateTime.MinValue);
+			var model = new Job("data", DateTime.MinValue);
+			await fixture.StoreJobAsync(model);
+			using (var t = fixture.CreateTransaction())
+			{
+				t.EnqueueJob(model.Id);
+				await t.CommitAsync();
+			}
 
 			// Act
-			var result = await fixture.FetchNextDelayedJobAsync();
+			var result = await fixture.FetchNextJobAsync();
 			result.RemoveFromQueue();
 			result.Dispose();
 
 			// Assert
-			(await fixture.FetchNextDelayedJobAsync()).Should().BeNull();
+			(await fixture.FetchNextJobAsync()).Should().BeNull();
 		}
 
 		//[Fact]

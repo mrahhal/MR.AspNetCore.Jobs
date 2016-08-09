@@ -17,6 +17,7 @@ namespace MR.AspNetCore.Jobs
 			// Processors
 			services.AddTransient<DelayedJobProcessor>();
 			services.AddTransient<CronJobProcessor>();
+			services.AddTransient<JobQueuer>();
 
 			var options = new JobsOptions();
 			configure(options);

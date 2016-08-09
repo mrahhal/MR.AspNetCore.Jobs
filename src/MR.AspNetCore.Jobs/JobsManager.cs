@@ -31,7 +31,6 @@ namespace MR.AspNetCore.Jobs
 
 			var method = MethodInvocation.FromExpression(methodCall);
 			await EnqueueCore(null, method);
-			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
 		public async Task EnqueueAsync<T>(Expression<Action<T>> methodCall)
@@ -40,7 +39,6 @@ namespace MR.AspNetCore.Jobs
 
 			var method = MethodInvocation.FromExpression(methodCall);
 			await EnqueueCore(null, method);
-			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
 		public async Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall)
@@ -49,7 +47,6 @@ namespace MR.AspNetCore.Jobs
 
 			var method = MethodInvocation.FromExpression(methodCall);
 			await EnqueueCore(null, method);
-			_server.Pulse(PulseKind.BackgroundJobEnqueued);
 		}
 
 		public Task EnqueueAsync(Expression<Action> methodCall, DateTimeOffset due)
@@ -79,11 +76,16 @@ namespace MR.AspNetCore.Jobs
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
-			var job = new DelayedJob(Helper.ToJson(data));
+			var job = new Job(Helper.ToJson(data));
+			job.Due = due;
 
 			using (var connection = _storage.GetConnection())
 			{
-				await connection.StoreDelayedJobAsync(job, due);
+				await connection.StoreJobAsync(job);
+			}
+			if (job.Due == null)
+			{
+				_server.Pulse();
 			}
 		}
 	}

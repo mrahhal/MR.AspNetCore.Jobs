@@ -20,7 +20,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		protected override Task<IFetchedJob> FetchNextJobCoreAsync(IStorageConnection connection)
 		{
-			return connection.FetchNextDelayedJobAsync();
+			return connection.FetchNextJobAsync();
 		}
 
 		protected override void OnStepEnter(ProcessingContext context)
