@@ -18,7 +18,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private IStorage _storage;
 		private IServiceProvider _provider;
 		private ILoggerFactory _loggerFactory;
-		private BackgroundJobProcessorBase[] _backgroundJobProcessors;
+		private DelayedJobProcessor[] _delayedJobProcessors;
 		private JobsOptions _options;
 		private bool _disposed;
 
@@ -71,9 +71,9 @@ namespace MR.AspNetCore.Jobs.Server
 		private bool AllProcessorsWaiting()
 		{
 			// Perf: avoid allocation
-			for (int i = 0; i < _backgroundJobProcessors.Length; i++)
+			for (int i = 0; i < _delayedJobProcessors.Length; i++)
 			{
-				if (!_backgroundJobProcessors[i].Waiting)
+				if (!_delayedJobProcessors[i].Waiting)
 				{
 					return false;
 				}
@@ -113,14 +113,14 @@ namespace MR.AspNetCore.Jobs.Server
 		private IProcessor[] GetProcessors(int processorCount)
 		{
 			var processors = new List<IProcessor>();
-			var backgroundJobProcessors = new List<BackgroundJobProcessorBase>(processorCount);
+			var delayedJobProcessors = new List<DelayedJobProcessor>(processorCount);
 
 			for (int i = 0; i < processorCount; i++)
 			{
-				backgroundJobProcessors.Add(_provider.GetService<DelayedJobProcessor>());
-				_backgroundJobProcessors = backgroundJobProcessors.ToArray();
+				delayedJobProcessors.Add(_provider.GetService<DelayedJobProcessor>());
+				_delayedJobProcessors = delayedJobProcessors.ToArray();
 			}
-			processors.AddRange(backgroundJobProcessors);
+			processors.AddRange(delayedJobProcessors);
 
 			processors.Add(_provider.GetService<CronJobProcessor>());
 

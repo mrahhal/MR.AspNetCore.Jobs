@@ -29,31 +29,28 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public async Task ProcessAsync(ProcessingContext context)
 		{
-			while (!context.IsStopping)
+			Job job;
+			using (var connection = context.Storage.GetConnection())
 			{
-				Job job;
-				using (var connection = context.Storage.GetConnection())
+				while (
+					!context.IsStopping &&
+					(job = await connection.GetNextJobToBeEnqueuedAsync()) != null)
 				{
-					while (
-						!context.IsStopping &&
-						(job = await connection.GetNextJobToBeEnqueuedAsync()) != null)
-					{
-						var state = new EnqueuedState();
+					var state = new EnqueuedState();
 
-						using (var transaction = connection.CreateTransaction())
-						{
-							_stateChanger.ChangeState(job, state, transaction);
-							transaction.EnqueueJob(job.Id);
-							await transaction.CommitAsync();
-						}
+					using (var transaction = connection.CreateTransaction())
+					{
+						_stateChanger.ChangeState(job, state, transaction);
+						transaction.EnqueueJob(job.Id);
+						await transaction.CommitAsync();
 					}
 				}
-
-				context.ThrowIfStopping();
-
-				BackgroundJobProcessorBase.PulseEvent.Set();
-				await WaitHandleEx.WaitAnyAsync(PulseEvent, context.CancellationToken.WaitHandle, _pollingDelay);
 			}
+
+			context.ThrowIfStopping();
+
+			DelayedJobProcessor.PulseEvent.Set();
+			await WaitHandleEx.WaitAnyAsync(PulseEvent, context.CancellationToken.WaitHandle, _pollingDelay);
 		}
 	}
 }
