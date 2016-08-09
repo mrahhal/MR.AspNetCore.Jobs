@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using MR.AspNetCore.Jobs.Server;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -13,6 +14,7 @@ namespace MR.AspNetCore.Jobs
 			services.AddSingleton<IJobsManager, JobsManager>();
 			services.AddSingleton<IJobFactory, JobFactory>();
 			services.AddSingleton<IProcessingServer, ProcessingServer>();
+			services.AddSingleton<IStateChanger, StateChanger>();
 
 			// Processors
 			services.AddTransient<DelayedJobProcessor>();

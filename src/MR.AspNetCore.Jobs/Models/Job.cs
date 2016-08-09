@@ -1,5 +1,6 @@
 using System;
 using MR.AspNetCore.Jobs.Server;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs.Models
 {
@@ -11,7 +12,7 @@ namespace MR.AspNetCore.Jobs.Models
 		public Job()
 		{
 			Added = DateTime.UtcNow;
-			StateName = States.Schedulued;
+			StateName = ScheduledState.StateName;
 		}
 
 		public Job(string data)

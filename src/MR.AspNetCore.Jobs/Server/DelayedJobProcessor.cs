@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs.Server
 {
@@ -11,8 +12,9 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public DelayedJobProcessor(
 			JobsOptions options,
+			IStateChanger stateChanger,
 			ILogger<DelayedJobProcessor> logger)
-			: base(options, logger)
+			: base(options, stateChanger, logger)
 		{
 		}
 

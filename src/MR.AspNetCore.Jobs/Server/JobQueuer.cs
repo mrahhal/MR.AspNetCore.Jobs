@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Server.States;
 using MR.AspNetCore.Jobs.Util;
 
 namespace MR.AspNetCore.Jobs.Server
@@ -13,13 +14,16 @@ namespace MR.AspNetCore.Jobs.Server
 		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
 		private JobsOptions _options;
 		private TimeSpan _pollingDelay;
+		private IStateChanger _stateChanger;
 
 		public JobQueuer(
-			ILogger<JobQueuer> logger,
-			JobsOptions options)
+			IStateChanger stateChanger,
+			JobsOptions options,
+			ILogger<JobQueuer> logger)
 		{
-			_logger = logger;
+			_stateChanger = stateChanger;
 			_options = options;
+			_logger = logger;
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 
@@ -34,11 +38,11 @@ namespace MR.AspNetCore.Jobs.Server
 						!context.IsStopping &&
 						(job = await connection.GetNextJobToBeEnqueuedAsync()) != null)
 					{
-						job.StateName = States.Enqueued;
+						var state = new EnqueuedState();
 
 						using (var transaction = connection.CreateTransaction())
 						{
-							transaction.UpdateJob(job);
+							_stateChanger.ChangeState(job, state, transaction);
 							transaction.EnqueueJob(job.Id);
 							await transaction.CommitAsync();
 						}

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -77,7 +78,7 @@ namespace MR.AspNetCore.Jobs
 			var sql = $@"
 				SELECT TOP (1) *
 				FROM [Jobs].Jobs
-				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{States.Schedulued}'";
+				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
 			return _storage.UseConnectionAsync(async connection =>
 			{
