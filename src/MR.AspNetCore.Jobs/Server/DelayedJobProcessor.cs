@@ -72,6 +72,7 @@ namespace MR.AspNetCore.Jobs.Server
 					{
 						var job = await connection.GetJobAsync(fetched.JobId);
 						var invocationData = Helper.FromJson<InvocationData>(job.Data);
+						// REVIEW: What happens if a type for an old not executed job is removed forever?
 						var method = invocationData.Deserialize();
 						var factory = scopedContext.Provider.GetService<IJobFactory>();
 
@@ -85,6 +86,13 @@ namespace MR.AspNetCore.Jobs.Server
 						{
 							var sp = Stopwatch.StartNew();
 							await _stateChanger.ChangeStateAsync(job, new ProcessingState(), connection);
+
+							if (job.Retries > 0)
+							{
+								_logger.LogInformation(
+									$"Retrying a job: {job.Retries}...");
+							}
+
 							var result = await ExecuteJob(method, instance);
 							sp.Stop();
 
@@ -103,7 +111,6 @@ namespace MR.AspNetCore.Jobs.Server
 									newState = new FailedState();
 									_logger.LogWarning(
 										$"Job failed to execute: '{result.Message}'.");
-									// TODO: Send to DJQ
 								}
 							}
 							else
@@ -125,9 +132,12 @@ namespace MR.AspNetCore.Jobs.Server
 							}
 
 							fetched.RemoveFromQueue();
-							_logger.LogInformation(
-								"Job executed succesfully. Took: {seconds} secs.",
-								sp.Elapsed.TotalSeconds);
+							if (result.Succeeded)
+							{
+								_logger.LogInformation(
+									"Job executed succesfully. Took: {seconds} secs.",
+									sp.Elapsed.TotalSeconds);
+							}
 						}
 						catch (Exception ex)
 						{
