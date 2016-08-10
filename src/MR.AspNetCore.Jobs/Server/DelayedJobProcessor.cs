@@ -35,6 +35,7 @@ namespace MR.AspNetCore.Jobs.Server
 		public Task ProcessAsync(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
+			context.ThrowIfStopping();
 			return ProcessCoreAsync(context);
 		}
 
@@ -42,13 +43,16 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			try
 			{
-				await Step(context);
+				var worked = await Step(context);
 
 				context.ThrowIfStopping();
 
 				Waiting = true;
-				var token = GetTokenToWaitOn(context);
-				await WaitHandleEx.WaitAnyAsync(PulseEvent, token.WaitHandle, _pollingDelay);
+				if (!worked)
+				{
+					var token = GetTokenToWaitOn(context);
+					await WaitHandleEx.WaitAnyAsync(PulseEvent, token.WaitHandle, _pollingDelay);
+				}
 			}
 			finally
 			{
@@ -56,14 +60,12 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 		}
 
-		private async Task Step(ProcessingContext context)
+		private async Task<bool> Step(ProcessingContext context)
 		{
+			var fetched = default(IFetchedJob);
 			using (var connection = context.Storage.GetConnection())
 			{
-				var fetched = default(IFetchedJob);
-				while (
-					!context.IsStopping &&
-					(fetched = await connection.FetchNextJobAsync()) != null)
+				if ((fetched = await connection.FetchNextJobAsync()) != null)
 				{
 					using (fetched)
 					using (var scopedContext = context.CreateScope())
@@ -82,6 +84,7 @@ namespace MR.AspNetCore.Jobs.Server
 						try
 						{
 							var sp = Stopwatch.StartNew();
+							await _stateChanger.ChangeStateAsync(job, new ProcessingState(), connection);
 							var result = await ExecuteJob(method, instance);
 							sp.Stop();
 
@@ -91,6 +94,7 @@ namespace MR.AspNetCore.Jobs.Server
 								var shouldRetry = await UpdateJobForRetryAsync(instance, job, connection);
 								if (shouldRetry)
 								{
+									newState = new ScheduledState();
 									_logger.LogWarning(
 										$"Job failed to execute: '{result.Message}'. Will retry later.");
 								}
@@ -127,23 +131,14 @@ namespace MR.AspNetCore.Jobs.Server
 						}
 						catch (Exception ex)
 						{
-							var shouldRetry = await UpdateJobForRetryAsync(instance, job, connection);
-							if (shouldRetry)
-							{
-								_logger.LogWarning(
-									$"Job failed to execute: '{ex.Message}'. Requeuing for another retry.");
-								fetched.Requeue();
-							}
-							else
-							{
-								_logger.LogWarning(
-									$"Job failed to execute: '{ex.Message}'.");
-								// TODO: Send to DJQ
-							}
+							_logger.LogWarning(
+								$"An exception occured while trying to execute a job: '{ex.Message}'. Requeuing for another retry.");
+							fetched.Requeue();
 						}
 					}
 				}
 			}
+			return fetched != null;
 		}
 
 		private async Task<ExecuteJobResult> ExecuteJob(MethodInvocation method, object instance)

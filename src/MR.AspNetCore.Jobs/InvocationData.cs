@@ -21,6 +21,8 @@ namespace MR.AspNetCore.Jobs
 		public string ParameterTypes { get; }
 		public string Arguments { get; set; }
 
+		public string Serialize() => Helper.ToJson(this);
+
 		public MethodInvocation Deserialize()
 		{
 			try

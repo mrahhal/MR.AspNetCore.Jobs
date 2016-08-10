@@ -76,7 +76,7 @@ namespace MR.AspNetCore.Jobs
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
-			var job = new Job(Helper.ToJson(data));
+			var job = new Job(data.Serialize());
 			job.Due = due;
 
 			using (var connection = _storage.GetConnection())
