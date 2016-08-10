@@ -41,7 +41,6 @@ namespace MR.AspNetCore.Jobs.Server
 					using (var transaction = connection.CreateTransaction())
 					{
 						_stateChanger.ChangeState(job, state, transaction);
-						transaction.EnqueueJob(job.Id);
 						await transaction.CommitAsync();
 					}
 				}

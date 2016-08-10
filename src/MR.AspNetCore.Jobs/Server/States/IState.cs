@@ -1,4 +1,5 @@
 ﻿using System;
+using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs.Server.States
 {
@@ -6,5 +7,7 @@ namespace MR.AspNetCore.Jobs.Server.States
 	{
 		TimeSpan? ExpiresAfter { get; }
 		string Name { get; }
+
+		void Apply(Job job, IStorageTransaction transaction);
 	}
 }

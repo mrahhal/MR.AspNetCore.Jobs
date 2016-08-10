@@ -77,7 +77,7 @@ namespace MR.AspNetCore.Jobs
 		{
 			var sql = $@"
 				SELECT TOP (1) *
-				FROM [Jobs].Jobs
+				FROM [Jobs].Jobs WITH (readpast)
 				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
 			return _storage.UseConnectionAsync(async connection =>

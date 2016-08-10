@@ -32,7 +32,6 @@ namespace MR.AspNetCore.Jobs
 		/// <summary>
 		/// Gets the next job to be enqueued.
 		/// </summary>
-		/// <returns></returns>
 		Task<Job> GetNextJobToBeEnqueuedAsync();
 
 		// Cron jobs

@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -38,6 +39,15 @@ namespace MR.AspNetCore.Jobs
 		/// Enqueues a job that will be executed at the given moment of time.
 		/// </summary>
 		Task EnqueueAsync<T>(Expression<Func<T, Task>> methodCall, DateTimeOffset due);
+
+		/// <summary>
+		/// Changes the state of a job.
+		/// </summary>
+		/// <param name="jobId">The job's id.</param>
+		/// <param name="state">The state to transition to.</param>
+		/// <param name="expectedState">The expected current state.</param>
+		/// <returns>Whether the state transition succeeded.</returns>
+		Task<bool> ChangeStateAsync(int jobId, IState state, string expectedState);
 	}
 
 	public static class JobsManagerExtensions
