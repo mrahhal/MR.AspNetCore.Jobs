@@ -18,7 +18,7 @@ namespace MR.AspNetCore.Jobs.Server.States
 			}
 
 			job.StateName = state.Name;
-
+			state.Apply(job, transaction);
 			transaction.UpdateJob(job);
 		}
 	}

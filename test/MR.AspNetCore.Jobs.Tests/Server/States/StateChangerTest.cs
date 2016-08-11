@@ -26,6 +26,7 @@ namespace MR.AspNetCore.Jobs.Server.States
 			// Assert
 			job.StateName.Should().Be("s");
 			job.ExpiresAt.Should().NotHaveValue();
+			Mock.Get(state).Verify(s => s.Apply(job, mockTransaction.Object), Times.Once);
 			mockTransaction.Verify(t => t.UpdateJob(job), Times.Once);
 			mockTransaction.Verify(t => t.CommitAsync(), Times.Never);
 		}
