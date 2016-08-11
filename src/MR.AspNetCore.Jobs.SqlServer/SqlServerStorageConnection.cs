@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
+using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -18,33 +19,79 @@ namespace MR.AspNetCore.Jobs
 			_storage = storage;
 		}
 
-		public Task StoreJobAsync(DelayedJob job)
+		public async Task StoreJobAsync(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
+			job.Due = NormalizeDateTime(job.Due);
 
 			var sql = @"
-				INSERT INTO Jobs.DelayedJobs
-				(Id, Data, Due)
+				INSERT INTO [Jobs].Jobs
+				(Data, Added, Due, ExpiresAt, Retries, StateName)
 				VALUES
-				(@id, @data, @due)";
+				(@data, @added, @due, @expiresAt, @retries, @stateName)
 
-			return _storage.UseConnectionAsync(connection =>
+				SELECT CAST(SCOPE_IDENTITY() as int)";
+
+			var id = await _storage.UseConnectionAsync(async connection =>
 			{
-				return connection.ExecuteAsync(sql, new
+				return (await connection.QueryAsync<int>(sql, new
 				{
 					id = job.Id,
 					data = job.Data,
-					due = job.Due.HasValue ? NormalizeDateTime(job.Due.Value) : job.Due
-				});
+					added = job.Added,
+					due = job.Due,
+					expiresAt = job.ExpiresAt,
+					retries = job.Retries,
+					stateName = job.StateName
+				})).Single();
+			});
+			job.Id = id;
+		}
+
+		public Task<Job> GetJobAsync(int id)
+		{
+			var sql = @"
+				SELECT * FROM [Jobs].Jobs
+				WHERE Id = @id";
+
+			return _storage.UseConnectionAsync(async connection =>
+			{
+				return (await connection.QueryAsync<Job>(sql, new
+				{
+					id
+				})).FirstOrDefault();
 			});
 		}
 
-		public Task StoreJobAsync(CronJob job)
+		public Task<IFetchedJob> FetchNextJobAsync()
+		{
+			var sql = @"
+				DELETE TOP (1)
+				FROM [Jobs].JobQueue WITH (readpast, updlock, rowlock)
+				OUTPUT DELETED.JobId";
+
+			return FetchNextDelayedJobCoreAsync(sql);
+		}
+
+		public Task<Job> GetNextJobToBeEnqueuedAsync()
+		{
+			var sql = $@"
+				SELECT TOP (1) *
+				FROM [Jobs].Jobs WITH (readpast)
+				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
+
+			return _storage.UseConnectionAsync(async connection =>
+			{
+				return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
+			});
+		}
+
+		public Task StoreCronJobAsync(CronJob job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
 			var sql = @"
-				INSERT INTO Jobs.CronJobs
+				INSERT INTO [Jobs].CronJobs
 				(Id, Name, TypeName, Cron, LastRun)
 				VALUES
 				(@id, @name, @typeName, @cron, @lastRun)";
@@ -67,7 +114,7 @@ namespace MR.AspNetCore.Jobs
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
 			var sql = @"
-				UPDATE Jobs.CronJobs
+				UPDATE [Jobs].CronJobs
 				SET TypeName = @typeName, Cron = @cron, LastRun = @lastRun
 				WHERE Id = @id";
 
@@ -83,45 +130,60 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
-		public Task<IFetchedJob> FetchNextJobAsync()
+		public Task<CronJob[]> GetCronJobsAsync()
 		{
 			var sql = @"
-				DELETE TOP (1) from Jobs.DelayedJobs with (readpast, updlock, rowlock)
-				output DELETED.*
-				WHERE Due IS NULL";
+				SELECT * FROM [Jobs].CronJobs";
 
-			return FetchNextDelayedJobCoreAsync(sql);
+			return _storage.UseConnectionAsync(async connection =>
+			{
+				return
+					(await connection.QueryAsync<CronJob>(sql))
+					.ToArray();
+			});
 		}
 
-		public Task<IFetchedJob> FetchNextDelayedJobAsync(DateTime from, DateTime to)
+		public Task RemoveCronJobAsync(string name)
 		{
 			var sql = @"
-				DELETE TOP (1) from Jobs.DelayedJobs with (readpast, updlock, rowlock)
-				output DELETED.*
-				WHERE Due >= @from AND Due < @to";
+				DELETE FROM [Jobs].CronJobs
+				WHERE Name = @name";
 
-			return FetchNextDelayedJobCoreAsync(sql, new { from = NormalizeDateTime(from), to });
+			return _storage.UseConnectionAsync(connection =>
+			{
+				return connection.ExecuteAsync(sql, new { name });
+			});
 		}
 
-		private DateTime NormalizeDateTime(DateTime from)
+		public IStorageTransaction CreateTransaction()
 		{
-			if (from == DateTime.MinValue)
+			return new SqlServerStorageTransaction(_storage);
+		}
+
+		public void Dispose()
+		{
+		}
+
+		private DateTime? NormalizeDateTime(DateTime? dateTime)
+		{
+			if (!dateTime.HasValue) return dateTime;
+			if (dateTime == DateTime.MinValue)
 			{
 				return new DateTime(1754, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 			}
-			return from;
+			return dateTime;
 		}
 
 		private async Task<IFetchedJob> FetchNextDelayedJobCoreAsync(string sql, object args = null)
 		{
-			DelayedJob fetchedJob = null;
+			FetchedJob fetchedJob = null;
 			var connection = _storage.CreateAndOpenConnection();
 			var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
 
 			try
 			{
 				fetchedJob =
-					(await connection.QueryAsync<DelayedJob>(sql, args, transaction))
+					(await connection.QueryAsync<FetchedJob>(sql, args, transaction))
 					.FirstOrDefault();
 			}
 			catch (SqlException)
@@ -140,53 +202,10 @@ namespace MR.AspNetCore.Jobs
 			}
 
 			return new SqlServerFetchedJob(
-				fetchedJob,
+				fetchedJob.JobId,
 				_storage,
 				connection,
 				transaction);
-		}
-
-		public Task<CronJob[]> GetCronJobsAsync()
-		{
-			var sql = @"
-				SELECT * FROM Jobs.CronJobs";
-
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return
-					(await connection.QueryAsync<CronJob>(sql))
-					.ToArray();
-			});
-		}
-
-		public Task<CronJob> GetCronJobByNameAsync(string name)
-		{
-			var sql = @"
-				SELECT * FROM Jobs.CronJobs
-				WHERE Name = @name";
-
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return
-					(await connection.QueryAsync<CronJob>(sql, new { name }))
-					.FirstOrDefault();
-			});
-		}
-
-		public Task RemoveCronJobAsync(string name)
-		{
-			var sql = @"
-				DELETE FROM Jobs.CronJobs
-				WHERE Name = @name";
-
-			return _storage.UseConnectionAsync(connection =>
-			{
-				return connection.ExecuteAsync(sql, new { name });
-			});
-		}
-
-		public void Dispose()
-		{
 		}
 	}
 }

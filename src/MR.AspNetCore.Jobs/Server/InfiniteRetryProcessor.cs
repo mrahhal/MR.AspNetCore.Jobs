@@ -26,7 +26,6 @@ namespace MR.AspNetCore.Jobs.Server
 				try
 				{
 					await _inner.ProcessAsync(context);
-					return;
 				}
 				catch (OperationCanceledException)
 				{

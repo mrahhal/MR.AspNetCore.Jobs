@@ -65,7 +65,7 @@ namespace MR.AspNetCore.Jobs
 							Cron = entry.Cron,
 							LastRun = DateTime.MinValue
 						};
-						await connection.StoreJobAsync(cronJob);
+						await connection.StoreCronJobAsync(cronJob);
 					}
 					else
 					{

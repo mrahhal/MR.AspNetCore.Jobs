@@ -37,6 +37,9 @@ namespace Basic
 
 				// Use the cron jobs registry
 				options.UseCronJobRegistry<BasicCronJobRegistry>();
+
+				// Configure the polling delay used when polling the storage (in seconds)
+				options.PollingDelay = 10;
 			});
 
 			// Add jobs to DI
@@ -62,6 +65,13 @@ namespace Basic
 			}
 
 			app.UseStaticFiles();
+
+			// Make sure the database is created first
+			using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+			{
+				var provider = scope.ServiceProvider;
+				provider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+			}
 
 			// Starts the processing server
 			app.UseJobs();

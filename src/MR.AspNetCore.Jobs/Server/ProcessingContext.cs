@@ -8,7 +8,6 @@ namespace MR.AspNetCore.Jobs.Server
 	public class ProcessingContext : IDisposable
 	{
 		private IServiceScope _scope;
-		internal event EventHandler<PulseKind> Pulsed;
 
 		private ProcessingContext(ProcessingContext other)
 		{
@@ -24,18 +23,22 @@ namespace MR.AspNetCore.Jobs.Server
 		public ProcessingContext(
 			IServiceProvider provider,
 			IStorage storage,
+			CronJobRegistry cronJobRegistry,
 			CancellationToken cancellationToken)
 		{
 			Provider = provider;
 			Storage = storage;
+			CronJobRegistry = cronJobRegistry;
 			CancellationToken = cancellationToken;
 		}
 
-		public IServiceProvider Provider { get; set; }
+		public IServiceProvider Provider { get; private set; }
 
-		public CancellationToken CancellationToken { get; set; }
+		public IStorage Storage { get; }
 
-		public IStorage Storage { get; set; }
+		public CronJobRegistry CronJobRegistry { get; private set; }
+
+		public CancellationToken CancellationToken { get; }
 
 		public bool IsStopping => CancellationToken.IsCancellationRequested;
 
@@ -48,6 +51,7 @@ namespace MR.AspNetCore.Jobs.Server
 				.GetRequiredService<IServiceScopeFactory>()
 				.CreateScope();
 			n.Provider = n._scope.ServiceProvider;
+			n.CronJobRegistry = CronJobRegistry;
 			return n;
 		}
 
@@ -67,11 +71,6 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_scope.Dispose();
 			}
-		}
-
-		internal void Pulse(PulseKind kind)
-		{
-			Pulsed?.Invoke(this, kind);
 		}
 	}
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,15 +18,20 @@ namespace MR.AspNetCore.Jobs.Server
 		private IStorage _storage;
 		private IServiceProvider _provider;
 		private ILoggerFactory _loggerFactory;
+		private DelayedJobProcessor[] _delayedJobProcessors;
+		private JobsOptions _options;
+		private bool _disposed;
 
 		public ProcessingServer(
 			IServiceProvider provider,
 			IStorage storage,
+			JobsOptions options,
 			ILoggerFactory loggerFactory,
 			ILogger<ProcessingServer> logger)
 		{
 			_provider = provider;
 			_storage = storage;
+			_options = options;
 			_loggerFactory = loggerFactory;
 			_logger = logger;
 			_cts = new CancellationTokenSource();
@@ -34,12 +40,15 @@ namespace MR.AspNetCore.Jobs.Server
 		public void Start()
 		{
 			_logger.LogInformation("Starting the processing server.");
-			_processors = GetProcessors();
-			_logger.LogInformation($"Initiating {_processors.Length} processors.");
+			var processorCount = Environment.ProcessorCount;
+			_logger.LogInformation($"Detected {processorCount} machine processor(s).");
+			_processors = GetProcessors(processorCount);
+			_logger.LogInformation($"Initiating {_processors.Length} job processors.");
 
 			_context = new ProcessingContext(
 				_provider,
 				_storage,
+				_options.CronJobRegistry,
 				_cts.Token);
 
 			var processorTasks = _processors
@@ -48,13 +57,39 @@ namespace MR.AspNetCore.Jobs.Server
 			_compositeTask = Task.WhenAll(processorTasks);
 		}
 
-		public void Pulse(PulseKind kind)
+		public void Pulse()
 		{
-			_context.Pulse(kind);
+			if (!AllProcessorsWaiting())
+			{
+				// Some processor is still executing jobs so no need to pulse.
+				return;
+			}
+
+			JobQueuer.PulseEvent.Set();
+		}
+
+		private bool AllProcessorsWaiting()
+		{
+			// Perf: avoid allocation
+			for (int i = 0; i < _delayedJobProcessors.Length; i++)
+			{
+				if (!_delayedJobProcessors[i].Waiting)
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
 		public void Dispose()
 		{
+			if (_disposed)
+			{
+				return;
+			}
+			_disposed = true;
+
+			_logger.LogInformation("Shutting down Jobs processing server.");
 			_cts.Cancel();
 			try
 			{
@@ -75,14 +110,25 @@ namespace MR.AspNetCore.Jobs.Server
 			return new InfiniteRetryProcessor(inner, _loggerFactory);
 		}
 
-		private IProcessor[] GetProcessors()
+		private IProcessor[] GetProcessors(int processorCount)
 		{
-			return new IProcessor[]
+			var processors = new List<IProcessor>();
+			var delayedJobProcessors = new List<DelayedJobProcessor>(processorCount);
+
+			for (int i = 0; i < processorCount; i++)
 			{
-				_provider.GetService<FireAndForgetJobProcessor>(),
-				_provider.GetService<DelayedJobProcessor>(),
-				_provider.GetService<CronJobProcessor>()
-			};
+				delayedJobProcessors.Add(_provider.GetService<DelayedJobProcessor>());
+				_delayedJobProcessors = delayedJobProcessors.ToArray();
+			}
+			processors.AddRange(delayedJobProcessors);
+
+			processors.Add(_provider.GetService<CronJobProcessor>());
+
+			processors.Add(_provider.GetService<JobQueuer>());
+
+			processors.AddRange(_provider.GetServices<IAdditionalProcessor>());
+
+			return processors.ToArray();
 		}
 	}
 }

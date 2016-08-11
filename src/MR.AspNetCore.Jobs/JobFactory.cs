@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MR.AspNetCore.Jobs
 {
+	/// <summary>
+	/// An <see cref="IJobFactory"/> that uses an <see cref="IServiceProvider"/> to create jobs.
+	/// </summary>
 	public class JobFactory : IJobFactory
 	{
 		private IServiceProvider _provider;

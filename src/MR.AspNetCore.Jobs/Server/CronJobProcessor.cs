@@ -11,7 +11,6 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class CronJobProcessor : IProcessor
 	{
-		private ComputedCronJobElector _jobElector = new ComputedCronJobElector();
 		private ILogger<CronJobProcessor> _logger;
 
 		public CronJobProcessor(ILogger<CronJobProcessor> logger)
@@ -30,7 +29,6 @@ namespace MR.AspNetCore.Jobs.Server
 		private async Task ProcessCoreAsync(ProcessingContext context)
 		{
 			var storage = context.Storage;
-
 			var jobs = await GetJobsAsync(storage);
 			if (!jobs.Any())
 			{
@@ -42,12 +40,25 @@ namespace MR.AspNetCore.Jobs.Server
 
 			context.ThrowIfStopping();
 
-			var computed = Compute(jobs);
+			var computedJobs = Compute(jobs, context.CronJobRegistry.Build());
+			if (context.IsStopping)
+			{
+				return;
+			}
+
+			await Task.WhenAll(computedJobs.Select(j => RunAsync(j, context)));
+		}
+
+		private async Task RunAsync(ComputedCronJob computedJob, ProcessingContext context)
+		{
+			var storage = context.Storage;
+			var retryBehavior = computedJob.RetryBehavior;
+
 			while (!context.IsStopping)
 			{
 				var now = DateTime.UtcNow;
-				var nextJob = ElectNextJob(computed);
-				var due = nextJob.Next;
+
+				var due = ComputeDue(computedJob, now);
 				var timeSpan = due - now;
 
 				if (timeSpan.TotalSeconds > 0)
@@ -57,35 +68,74 @@ namespace MR.AspNetCore.Jobs.Server
 
 				context.ThrowIfStopping();
 
+				if (computedJob.Retries > 0 && computedJob.FirstTry < computedJob.Next)
+				{
+					computedJob.Retries = 0;
+				}
+
 				using (var scopedContext = context.CreateScope())
 				{
 					var factory = scopedContext.Provider.GetService<IJobFactory>();
-					var job = (IJob)factory.Create(nextJob.JobType);
+					var job = (IJob)factory.Create(computedJob.JobType);
+					var success = true;
 
 					try
 					{
 						var sw = Stopwatch.StartNew();
 						await job.ExecuteAsync();
 						sw.Stop();
+						computedJob.Retries = 0;
 						_logger.LogInformation(
 							"Cron job '{jobName}' executed succesfully. Took: {seconds} secs.",
-							nextJob.Job.Name, sw.Elapsed.TotalSeconds);
+							computedJob.Job.Name, sw.Elapsed.TotalSeconds);
 					}
 					catch (Exception ex)
 					{
+						success = false;
+						computedJob.Retries++;
 						_logger.LogWarning(
 							$"Cron job '{{jobName}}' failed to execute: '{ex.Message}'.",
-							nextJob.Job.Name);
+							computedJob.Job.Name);
 					}
 
-					using (var connection = storage.GetConnection())
+					if (success)
 					{
-						now = DateTime.UtcNow;
-						nextJob.Update(now);
-						await connection.UpdateCronJobAsync(nextJob.Job);
+						using (var connection = storage.GetConnection())
+						{
+							now = DateTime.UtcNow;
+							computedJob.Update(now);
+							await connection.UpdateCronJobAsync(computedJob.Job);
+						}
 					}
 				}
 			}
+		}
+
+		private DateTime ComputeDue(ComputedCronJob computedJob, DateTime now)
+		{
+			computedJob.UpdateNext(now);
+
+			var retryBehavior = computedJob.RetryBehavior;
+			var retries = computedJob.Retries;
+
+			if (retries == 0)
+			{
+				return computedJob.Next;
+			}
+
+			var realNext = computedJob.Schedule.GetNextOccurrence(now);
+
+			if (retries > 0 && !retryBehavior.Retry)
+			{
+				return realNext;
+			}
+
+			if (retries >= retryBehavior.RetryCount)
+			{
+				return realNext;
+			}
+
+			return computedJob.FirstTry.AddSeconds(retryBehavior.RetryIn(retries));
 		}
 
 		private void LogInfoAboutCronJobs(CronJob[] jobs)
@@ -93,7 +143,7 @@ namespace MR.AspNetCore.Jobs.Server
 			_logger.LogInformation($"Found {jobs.Length} cron job(s) to schedule.");
 			foreach (var job in jobs)
 			{
-				_logger.LogDebug($"Will schedule '{job.Name}' with cron '{job.Cron}'.");
+				_logger.LogDebug($"Scheduling '{job.Name}' with cron '{job.Cron}'.");
 			}
 		}
 
@@ -105,13 +155,13 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 		}
 
-		private ComputedCronJob[] Compute(IEnumerable<CronJob> jobs)
-			=> jobs.Select(CreateComputedCronJob).ToArray();
+		private ComputedCronJob[] Compute(IEnumerable<CronJob> jobs, CronJobRegistry.Entry[] entries)
+			=> jobs.Select(j => CreateComputedCronJob(j, entries)).ToArray();
 
-		private ComputedCronJob CreateComputedCronJob(CronJob job)
-			=> new ComputedCronJob(job);
-
-		private ComputedCronJob ElectNextJob(IEnumerable<ComputedCronJob> jobs)
-			=> _jobElector.Elect(jobs);
+		private ComputedCronJob CreateComputedCronJob(CronJob job, CronJobRegistry.Entry[] entries)
+		{
+			var entry = entries.First(e => e.Name == job.Name);
+			return new ComputedCronJob(job, entry);
+		}
 	}
 }

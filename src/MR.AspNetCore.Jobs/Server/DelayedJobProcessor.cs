@@ -1,20 +1,218 @@
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Server.States;
+using MR.AspNetCore.Jobs.Util;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class DelayedJobProcessor : BackgroundJobProcessorBase
+	public class DelayedJobProcessor : IProcessor
 	{
-		public DelayedJobProcessor(ILogger<DelayedJobProcessor> logger)
-			: base(logger)
+		private readonly TimeSpan _pollingDelay;
+		protected JobsOptions _options;
+		protected ILogger _logger;
+		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+		private IStateChanger _stateChanger;
+
+		public DelayedJobProcessor(
+			JobsOptions options,
+			IStateChanger stateChanger,
+			ILogger<DelayedJobProcessor> logger)
 		{
+			_options = options;
+			_stateChanger = stateChanger;
+			_logger = logger;
+			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 
-		protected override Task<IFetchedJob> FetchNextJobCoreAsync(IStorageConnection connection)
+		public bool Waiting { get; private set; }
+
+		public Task ProcessAsync(ProcessingContext context)
 		{
-			return connection.FetchNextDelayedJob();
+			if (context == null) throw new ArgumentNullException(nameof(context));
+			context.ThrowIfStopping();
+			return ProcessCoreAsync(context);
 		}
 
-		public override string ToString() => nameof(DelayedJobProcessor);
+		public async Task ProcessCoreAsync(ProcessingContext context)
+		{
+			try
+			{
+				var worked = await Step(context);
+
+				context.ThrowIfStopping();
+
+				Waiting = true;
+				if (!worked)
+				{
+					var token = GetTokenToWaitOn(context);
+					await WaitHandleEx.WaitAnyAsync(PulseEvent, token.WaitHandle, _pollingDelay);
+				}
+			}
+			finally
+			{
+				Waiting = false;
+			}
+		}
+
+		private async Task<bool> Step(ProcessingContext context)
+		{
+			var fetched = default(IFetchedJob);
+			using (var connection = context.Storage.GetConnection())
+			{
+				if ((fetched = await connection.FetchNextJobAsync()) != null)
+				{
+					using (fetched)
+					using (var scopedContext = context.CreateScope())
+					{
+						var job = await connection.GetJobAsync(fetched.JobId);
+						var invocationData = Helper.FromJson<InvocationData>(job.Data);
+						// REVIEW: What happens if a type for an old not executed job is removed forever?
+						var method = invocationData.Deserialize();
+						var factory = scopedContext.Provider.GetService<IJobFactory>();
+
+						var instance = default(object);
+						if (!method.Method.IsStatic)
+						{
+							instance = factory.Create(method.Type);
+						}
+
+						try
+						{
+							var sp = Stopwatch.StartNew();
+							await _stateChanger.ChangeStateAsync(job, new ProcessingState(), connection);
+
+							if (job.Retries > 0)
+							{
+								_logger.LogInformation(
+									$"Retrying a job: {job.Retries}...");
+							}
+
+							var result = await ExecuteJob(method, instance);
+							sp.Stop();
+
+							IState newState = null;
+							if (!result.Succeeded)
+							{
+								var shouldRetry = await UpdateJobForRetryAsync(instance, job, connection);
+								if (shouldRetry)
+								{
+									newState = new ScheduledState();
+									_logger.LogWarning(
+										$"Job failed to execute: '{result.Message}'. Will retry later.");
+								}
+								else
+								{
+									newState = new FailedState();
+									_logger.LogWarning(
+										$"Job failed to execute: '{result.Message}'.");
+								}
+							}
+							else
+							{
+								newState = new SucceededState();
+							}
+
+							if (newState != null)
+							{
+								using (var transaction = connection.CreateTransaction())
+								{
+									if (newState != null)
+									{
+										_stateChanger.ChangeState(job, newState, transaction);
+									}
+									transaction.UpdateJob(job);
+									await transaction.CommitAsync();
+								}
+							}
+
+							fetched.RemoveFromQueue();
+							if (result.Succeeded)
+							{
+								_logger.LogInformation(
+									"Job executed succesfully. Took: {seconds} secs.",
+									sp.Elapsed.TotalSeconds);
+							}
+						}
+						catch (Exception ex)
+						{
+							_logger.LogWarning(
+								$"An exception occured while trying to execute a job: '{ex.Message}'. Requeuing for another retry.");
+							fetched.Requeue();
+						}
+					}
+				}
+			}
+			return fetched != null;
+		}
+
+		private async Task<ExecuteJobResult> ExecuteJob(MethodInvocation method, object instance)
+		{
+			try
+			{
+				var result = method.Method.Invoke(instance, method.Args.ToArray()) as Task;
+				if (result != null)
+				{
+					await result;
+				}
+				return ExecuteJobResult.Success;
+			}
+			catch (Exception ex)
+			{
+				return new ExecuteJobResult(false, ex.Message);
+			}
+		}
+
+		private async Task<bool> UpdateJobForRetryAsync(object instance, Job job, IStorageConnection connection)
+		{
+			var retryBehavior =
+				(instance as IRetryable)?.RetryBehavior ??
+				RetryBehavior.DefaultRetry;
+
+			if (!retryBehavior.Retry)
+			{
+				return false;
+			}
+
+			var now = DateTime.UtcNow;
+			var retries = ++job.Retries;
+			if (retries >= retryBehavior.RetryCount)
+			{
+				return false;
+			}
+
+			var due = job.Added.AddSeconds(retryBehavior.RetryIn(retries));
+			job.Due = due;
+			using (var transaction = connection.CreateTransaction())
+			{
+				transaction.UpdateJob(job);
+				await transaction.CommitAsync();
+			}
+			return true;
+		}
+
+		protected virtual CancellationToken GetTokenToWaitOn(ProcessingContext context)
+		{
+			return context.CancellationToken;
+		}
+
+		private class ExecuteJobResult
+		{
+			public static readonly ExecuteJobResult Success = new ExecuteJobResult(true);
+
+			public ExecuteJobResult(bool succeeded, string message = null)
+			{
+				Succeeded = succeeded;
+				Message = message;
+			}
+
+			public bool Succeeded { get; set; }
+			public string Message { get; set; }
+		}
 	}
 }
