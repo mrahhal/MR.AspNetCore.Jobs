@@ -9,6 +9,8 @@ AppVeyor | Travis
 
 A background processing library for Asp.Net Core.
 
+Note that this is in development so incompatible changes can happen between minor versions.
+
 ## Overview
 
 A lot of the code was inspired from [Hangfire](https://github.com/HangfireIO/Hangfire) but this is a complete (and a more lightweight) rewrite. I'll refer to this library as "Jobs".
