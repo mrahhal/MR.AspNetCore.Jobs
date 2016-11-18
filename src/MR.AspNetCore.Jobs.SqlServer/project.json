@@ -16,7 +16,7 @@
   },
 
   "dependencies": {
-    "Microsoft.Extensions.Options": "1.0.0",
+    "Microsoft.Extensions.Options": "1.1.0",
     "MR.AspNetCore.Jobs": "*"
   },
 
@@ -29,9 +29,9 @@
         "portable-net45+netcore45+wpa81+wp8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.6.0",
-        "System.Data.SqlClient": "4.1.0",
-        "System.Threading.Thread": "4.0.0"
+        "NETStandard.Library": "1.6.1",
+        "System.Data.SqlClient": "4.3.0",
+        "System.Threading.Thread": "4.3.0"
       }
     }
   }
