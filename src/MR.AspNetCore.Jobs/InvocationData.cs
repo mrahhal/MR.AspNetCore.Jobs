@@ -27,14 +27,19 @@ namespace MR.AspNetCore.Jobs
 		{
 			try
 			{
-				var type = System.Type.GetType(Type, throwOnError: true, ignoreCase: true);
+				var type = System.Type.GetType(Type, throwOnError: false, ignoreCase: true);
+				if (type == null)
+				{
+					throw new JobLoadException("Could not load the job.");
+				}
+
 				var parameterTypes = Helper.FromJson<Type[]>(ParameterTypes);
 				var method = GetNonOpenMatchingMethod(type, Method, parameterTypes);
 
 				if (method == null)
 				{
-					throw new InvalidOperationException(string.Format(
-						"The type `{0}` does not contain a method with signature `{1}({2})`",
+					throw new JobLoadException(string.Format(
+						"The type '{0}' does not contain a method with signature '{1}({2})'",
 						type.FullName,
 						Method,
 						string.Join(", ", parameterTypes.Select(x => x.Name))));
@@ -45,9 +50,9 @@ namespace MR.AspNetCore.Jobs
 
 				return new MethodInvocation(type, method, arguments);
 			}
-			catch (Exception ex)
+			catch (Exception ex) when (!(ex is JobLoadException))
 			{
-				throw new Exception("Could not load the job. See inner exception for the details.", ex);
+				throw new JobLoadException("Could not load the job. See inner exception for the details.", ex);
 			}
 		}
 

@@ -75,7 +75,6 @@ namespace MR.AspNetCore.Jobs.Server
 					{
 						var job = await connection.GetJobAsync(fetched.JobId);
 						var invocationData = Helper.FromJson<InvocationData>(job.Data);
-						// REVIEW: What happens if a type for an old not executed job is removed forever?
 						var method = invocationData.Deserialize();
 						var factory = scopedContext.Provider.GetService<IJobFactory>();
 
@@ -141,12 +140,25 @@ namespace MR.AspNetCore.Jobs.Server
 								_logger.JobExecuted(sp.Elapsed.TotalSeconds);
 							}
 						}
-						catch (Exception ex)
+						catch (JobLoadException ex)
 						{
 							_logger.LogWarning(
 								5,
 								ex,
-								"An exception occured while trying to execute a job. Requeuing for another retry.");
+								"Could not load a job: '{JobId}'.",
+								job.Id);
+
+							await _stateChanger.ChangeStateAsync(job, new FailedState(), connection);
+							fetched.RemoveFromQueue();
+						}
+						catch (Exception ex)
+						{
+							_logger.LogWarning(
+								6,
+								ex,
+								"An exception occured while trying to execute a job: '{JobId}'. Requeuing for another retry.",
+								job.Id);
+
 							fetched.Requeue();
 						}
 					}
