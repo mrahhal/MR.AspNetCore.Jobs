@@ -127,7 +127,10 @@ namespace MR.AspNetCore.Jobs.Server
 									{
 										_stateChanger.ChangeState(job, newState, transaction);
 									}
-									transaction.UpdateJob(job);
+									else
+									{
+										transaction.UpdateJob(job);
+									}
 									await transaction.CommitAsync();
 								}
 							}
