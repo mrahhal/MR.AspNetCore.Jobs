@@ -90,7 +90,7 @@ namespace MR.AspNetCore.Jobs
 			{
 				action(connection, transaction);
 				return true;
-			}, null);
+			}, isolationLevel);
 		}
 
 		internal Task UseTransactionAsync(Func<SqlConnection, SqlTransaction, Task> func, IsolationLevel? isolationLevel = null)
@@ -99,7 +99,7 @@ namespace MR.AspNetCore.Jobs
 			{
 				await func(connection, transaction);
 				return true;
-			}, null);
+			}, isolationLevel);
 		}
 
 		internal T UseTransaction<T>(Func<SqlConnection, SqlTransaction, T> func, IsolationLevel? isolationLevel = null)

@@ -146,7 +146,7 @@ namespace MR.AspNetCore.Jobs.Server
 							_logger.LogWarning(
 								5,
 								ex,
-								$"An exception occured while trying to execute a job. Requeuing for another retry.");
+								"An exception occured while trying to execute a job. Requeuing for another retry.");
 							fetched.Requeue();
 						}
 					}
