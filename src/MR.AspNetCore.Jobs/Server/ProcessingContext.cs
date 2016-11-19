@@ -55,14 +55,9 @@ namespace MR.AspNetCore.Jobs.Server
 			return n;
 		}
 
-		public void Wait(TimeSpan timeout)
+		public Task WaitAsync(TimeSpan timeout)
 		{
-			CancellationToken.WaitHandle.WaitOne(timeout);
-		}
-
-		public Task<bool> WaitAsync(TimeSpan timeout)
-		{
-			return CancellationToken.WaitHandle.WaitOneAsync(timeout);
+			return Task.Delay(timeout, CancellationToken);
 		}
 
 		public void Dispose()
