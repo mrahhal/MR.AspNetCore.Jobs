@@ -42,9 +42,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			var processorCount = Environment.ProcessorCount;
 			_processors = GetProcessors(processorCount);
-			_logger.LogInformation($"Starting the processing server.");
-			_logger.LogInformation(
-				$"Detected {processorCount} machine processor(s). Initiating {_processors.Length} job processors.");
+			_logger.ServerStarting(processorCount, _processors.Length);
 
 			_context = new ProcessingContext(
 				_provider,
@@ -90,7 +88,7 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 			_disposed = true;
 
-			_logger.LogInformation("Shutting down Jobs processing server...");
+			_logger.ServerShuttingDown();
 			_cts.Cancel();
 			try
 			{
@@ -98,10 +96,10 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 			catch (AggregateException ex)
 			{
-				if (!(ex.InnerExceptions[0] is OperationCanceledException))
+				var innerEx = ex.InnerExceptions[0];
+				if (!(innerEx is OperationCanceledException))
 				{
-					_logger.LogWarning(
-						$"Expected an OperationCanceledException, but found '{ex.InnerExceptions[0].Message}'.");
+					_logger.ExpectedOperationCanceledException(innerEx);
 				}
 			}
 		}

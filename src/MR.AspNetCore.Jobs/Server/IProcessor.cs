@@ -6,8 +6,4 @@ namespace MR.AspNetCore.Jobs.Server
 	{
 		Task ProcessAsync(ProcessingContext context);
 	}
-
-	public interface IAdditionalProcessor : IProcessor
-	{
-	}
 }

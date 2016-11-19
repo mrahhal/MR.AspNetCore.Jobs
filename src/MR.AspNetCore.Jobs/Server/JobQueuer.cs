@@ -10,20 +10,22 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class JobQueuer : IProcessor
 	{
-		private ILogger<JobQueuer> _logger;
-		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+		private ILogger _logger;
 		private JobsOptions _options;
-		private TimeSpan _pollingDelay;
 		private IStateChanger _stateChanger;
 
+		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+		private TimeSpan _pollingDelay;
+
 		public JobQueuer(
-			IStateChanger stateChanger,
+			ILogger<JobQueuer> logger,
 			JobsOptions options,
-			ILogger<JobQueuer> logger)
+			IStateChanger stateChanger)
 		{
-			_stateChanger = stateChanger;
-			_options = options;
 			_logger = logger;
+			_options = options;
+			_stateChanger = stateChanger;
+
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 

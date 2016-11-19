@@ -13,20 +13,22 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class DelayedJobProcessor : IProcessor
 	{
-		private readonly TimeSpan _pollingDelay;
-		protected JobsOptions _options;
 		protected ILogger _logger;
-		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+		protected JobsOptions _options;
 		private IStateChanger _stateChanger;
 
+		private readonly TimeSpan _pollingDelay;
+		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+
 		public DelayedJobProcessor(
+			ILogger<DelayedJobProcessor> logger,
 			JobsOptions options,
-			IStateChanger stateChanger,
-			ILogger<DelayedJobProcessor> logger)
+			IStateChanger stateChanger)
 		{
 			_options = options;
 			_stateChanger = stateChanger;
 			_logger = logger;
+
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
 
@@ -35,6 +37,7 @@ namespace MR.AspNetCore.Jobs.Server
 		public Task ProcessAsync(ProcessingContext context)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
+
 			context.ThrowIfStopping();
 			return ProcessCoreAsync(context);
 		}
@@ -89,7 +92,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 							if (job.Retries > 0)
 							{
-								_logger.LogInformation(
+								_logger.LogDebug(
 									$"Retrying a job: {job.Retries}...");
 							}
 
@@ -103,14 +106,12 @@ namespace MR.AspNetCore.Jobs.Server
 								if (shouldRetry)
 								{
 									newState = new ScheduledState();
-									_logger.LogWarning(
-										$"Job failed to execute: '{result.Message}'. Will retry later.");
+									_logger.JobFailedWillRetry(result.Exception);
 								}
 								else
 								{
 									newState = new FailedState();
-									_logger.LogWarning(
-										$"Job failed to execute: '{result.Message}'.");
+									_logger.JobFailed(result.Exception);
 								}
 							}
 							else
@@ -134,15 +135,15 @@ namespace MR.AspNetCore.Jobs.Server
 							fetched.RemoveFromQueue();
 							if (result.Succeeded)
 							{
-								_logger.LogInformation(
-									"Job executed succesfully. Took: {seconds} secs.",
-									sp.Elapsed.TotalSeconds);
+								_logger.JobExecuted(sp.Elapsed.TotalSeconds);
 							}
 						}
 						catch (Exception ex)
 						{
 							_logger.LogWarning(
-								$"An exception occured while trying to execute a job: '{ex.Message}'. Requeuing for another retry.");
+								5,
+								ex,
+								$"An exception occured while trying to execute a job. Requeuing for another retry.");
 							fetched.Requeue();
 						}
 					}
@@ -164,7 +165,7 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 			catch (Exception ex)
 			{
-				return new ExecuteJobResult(false, ex.Message);
+				return new ExecuteJobResult(false, ex);
 			}
 		}
 
@@ -205,14 +206,14 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			public static readonly ExecuteJobResult Success = new ExecuteJobResult(true);
 
-			public ExecuteJobResult(bool succeeded, string message = null)
+			public ExecuteJobResult(bool succeeded, Exception exception = null)
 			{
 				Succeeded = succeeded;
-				Message = message;
+				Exception = exception;
 			}
 
 			public bool Succeeded { get; set; }
-			public string Message { get; set; }
+			public Exception Exception { get; set; }
 		}
 	}
 }

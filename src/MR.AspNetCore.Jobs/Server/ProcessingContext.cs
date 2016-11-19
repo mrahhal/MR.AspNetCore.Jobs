@@ -68,28 +68,4 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 		}
 	}
-
-	public static partial class Extensions
-	{
-		public static async Task<bool> WaitOneAsync(this WaitHandle handle, TimeSpan timeout)
-		{
-			RegisteredWaitHandle registeredHandle = null;
-			try
-			{
-				var tcs = new TaskCompletionSource<bool>();
-				registeredHandle = ThreadPool.RegisterWaitForSingleObject(
-					handle,
-					(state, timedOut) => ((TaskCompletionSource<bool>)state).TrySetResult(!timedOut),
-					tcs,
-					timeout,
-					true);
-				return await tcs.Task;
-			}
-			finally
-			{
-				if (registeredHandle != null)
-					registeredHandle.Unregister(null);
-			}
-		}
-	}
 }

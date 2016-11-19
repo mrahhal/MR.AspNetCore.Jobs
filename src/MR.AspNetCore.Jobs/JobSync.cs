@@ -10,7 +10,7 @@ namespace MR.AspNetCore.Jobs
 		public Task ExecuteAsync()
 		{
 			Execute();
-			return Task.FromResult(0);
+			return Task.FromResult(true);
 		}
 
 		/// <summary>

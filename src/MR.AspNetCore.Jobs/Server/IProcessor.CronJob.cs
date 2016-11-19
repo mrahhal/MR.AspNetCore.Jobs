@@ -11,7 +11,7 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class CronJobProcessor : IProcessor
 	{
-		private ILogger<CronJobProcessor> _logger;
+		private ILogger _logger;
 
 		public CronJobProcessor(ILogger<CronJobProcessor> logger)
 		{
@@ -32,11 +32,12 @@ namespace MR.AspNetCore.Jobs.Server
 			var jobs = await GetJobsAsync(storage);
 			if (!jobs.Any())
 			{
-				_logger.LogInformation(
-					"Couldn't find any cron jobs to schedule, cancelling processing of cron jobs.");
+				_logger.CronJobsNotFound();
+
+				// This will cancel this processor.
 				throw new OperationCanceledException();
 			}
-			LogInfoAboutCronJobs(jobs);
+			_logger.CronJobsScheduling(jobs);
 
 			context.ThrowIfStopping();
 
@@ -85,17 +86,13 @@ namespace MR.AspNetCore.Jobs.Server
 						await job.ExecuteAsync();
 						sw.Stop();
 						computedJob.Retries = 0;
-						_logger.LogInformation(
-							"Cron job '{jobName}' executed succesfully. Took: {seconds} secs.",
-							computedJob.Job.Name, sw.Elapsed.TotalSeconds);
+						_logger.CronJobExecuted(computedJob.Job.Name, sw.Elapsed.TotalSeconds);
 					}
 					catch (Exception ex)
 					{
 						success = false;
 						computedJob.Retries++;
-						_logger.LogWarning(
-							$"Cron job '{{jobName}}' failed to execute: '{ex.Message}'.",
-							computedJob.Job.Name);
+						_logger.CronJobFailed(computedJob.Job.Name, ex);
 					}
 
 					if (success)
@@ -136,15 +133,6 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 
 			return computedJob.FirstTry.AddSeconds(retryBehavior.RetryIn(retries));
-		}
-
-		private void LogInfoAboutCronJobs(CronJob[] jobs)
-		{
-			_logger.LogInformation($"Found {jobs.Length} cron job(s) to schedule.");
-			foreach (var job in jobs)
-			{
-				_logger.LogDebug($"Scheduling '{job.Name}' with cron '{job.Cron}'.");
-			}
 		}
 
 		private async Task<CronJob[]> GetJobsAsync(IStorage storage)

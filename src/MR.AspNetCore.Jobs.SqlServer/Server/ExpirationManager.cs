@@ -7,10 +7,11 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class ExpirationManager : IProcessor, IAdditionalProcessor
 	{
+		private ILogger _logger;
+
 		private const int MaxBatch = 1000;
 		private TimeSpan _delay = TimeSpan.FromSeconds(1);
 		private readonly TimeSpan _waitingInterval = TimeSpan.FromHours(1);
-		private ILogger<ExpirationManager> _logger;
 
 		private static readonly string[] Tables =
 		{
@@ -24,7 +25,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public async Task ProcessAsync(ProcessingContext context)
 		{
-			_logger.LogInformation("Collecting expired entities.");
+			_logger.CollectingExpiredEntities();
 
 			var storage = context.Storage as SqlServerStorage;
 

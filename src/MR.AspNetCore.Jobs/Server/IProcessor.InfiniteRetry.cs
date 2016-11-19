@@ -33,7 +33,10 @@ namespace MR.AspNetCore.Jobs.Server
 				}
 				catch (Exception ex)
 				{
-					_logger.LogWarning($"Prcessor '{_inner.ToString()}' failed: '{ex.Message}'. Retrying...");
+					_logger.LogWarning(
+						1,
+						ex,
+						"Prcessor '{ProcessorName}' failed. Retrying...", _inner.ToString());
 				}
 			}
 		}

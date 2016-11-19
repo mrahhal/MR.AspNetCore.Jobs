@@ -16,7 +16,7 @@ namespace MR.AspNetCore.Jobs
 		{
 			if (connection == null) throw new ArgumentNullException(nameof(connection));
 
-			logger?.LogInformation("Installing Jobs SQL objects...");
+			logger?.Installing();
 
 			var script = GetStringResource(
 				typeof(SqlServerObjectsInstaller).GetTypeInfo().Assembly,
@@ -37,11 +37,11 @@ namespace MR.AspNetCore.Jobs
 					{
 						throw;
 					}
-					logger?.LogWarning("Exception occurred during automatic migration. Retrying...", ex);
+					logger?.InstallingError(ex);
 				}
 			}
 
-			logger?.LogInformation("Jobs SQL objects installed.");
+			logger?.InstallingSuccess();
 		}
 
 		private static string GetStringResource(Assembly assembly, string resourceName)
@@ -50,7 +50,7 @@ namespace MR.AspNetCore.Jobs
 			{
 				if (stream == null)
 				{
-					throw new InvalidOperationException(String.Format(
+					throw new InvalidOperationException(string.Format(
 						"Requested resource `{0}` was not found in the assembly `{1}`.",
 						resourceName,
 						assembly));
