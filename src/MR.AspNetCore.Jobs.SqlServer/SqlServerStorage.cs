@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,10 +21,12 @@ namespace MR.AspNetCore.Jobs
 			_loggerFactory = loggerFactory;
 		}
 
-		public Task InitializeAsync()
+		public Task InitializeAsync(CancellationToken cancellationToken)
 		{
 			UseConnection(connection =>
 			{
+				if (cancellationToken.IsCancellationRequested) return;
+
 				SqlServerObjectsInstaller.Install(
 					connection,
 					_loggerFactory.CreateLogger(typeof(SqlServerObjectsInstaller)));

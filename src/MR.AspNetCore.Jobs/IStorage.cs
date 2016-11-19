@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MR.AspNetCore.Jobs
@@ -10,7 +11,7 @@ namespace MR.AspNetCore.Jobs
 		/// <summary>
 		/// Initializes the storage.
 		/// </summary>
-		Task InitializeAsync();
+		Task InitializeAsync(CancellationToken cancellationToken);
 
 		/// <summary>
 		/// Returns an <see cref="IStorageConnection"/> that is connected to this storage.

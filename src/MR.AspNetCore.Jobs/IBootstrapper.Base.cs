@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using MR.AspNetCore.Jobs.Models;
@@ -10,6 +11,9 @@ namespace MR.AspNetCore.Jobs
 	public abstract class BootstrapperBase : IBootstrapper
 	{
 		private IApplicationLifetime _appLifetime;
+		private CancellationTokenSource _cts;
+		private CancellationTokenRegistration _ctsRegistration;
+		private Task _bootstrappingTask;
 
 		public BootstrapperBase(
 			JobsOptions options,
@@ -21,6 +25,19 @@ namespace MR.AspNetCore.Jobs
 			Storage = storage;
 			Server = server;
 			_appLifetime = appLifetime;
+
+			_cts = new CancellationTokenSource();
+			_ctsRegistration = appLifetime.ApplicationStopping.Register(() =>
+			{
+				_cts.Cancel();
+				try
+				{
+					_bootstrappingTask?.Wait();
+				}
+				catch (OperationCanceledException)
+				{
+				}
+			});
 		}
 
 		protected JobsOptions Options { get; }
@@ -29,12 +46,26 @@ namespace MR.AspNetCore.Jobs
 
 		protected IProcessingServer Server { get; }
 
-		public async Task BootstrapAsync()
+		public Task BootstrapAsync()
 		{
-			await Storage.InitializeAsync();
+			return (_bootstrappingTask = BootstrapTaskAsync());
+		}
+
+		private async Task BootstrapTaskAsync()
+		{
+			await Storage.InitializeAsync(_cts.Token);
+			if (_cts.IsCancellationRequested) return;
+
 			await WorkOutCronJobs();
+			if (_cts.IsCancellationRequested) return;
+
 			await BootstrapCoreAsync();
+			if (_cts.IsCancellationRequested) return;
+
 			Server.Start();
+
+			_ctsRegistration.Dispose();
+			_cts.Dispose();
 		}
 
 		public async Task WorkOutCronJobs()

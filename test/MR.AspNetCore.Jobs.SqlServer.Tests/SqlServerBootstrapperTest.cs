@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,7 +46,7 @@ namespace MR.AspNetCore.Jobs
 			await bootstrapper.BootstrapAsync();
 
 			// Assert
-			_mockStorage.Verify(s => s.InitializeAsync());
+			_mockStorage.Verify(s => s.InitializeAsync(It.IsAny<CancellationToken>()));
 		}
 
 		[Fact]
