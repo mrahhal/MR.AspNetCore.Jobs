@@ -75,17 +75,14 @@ namespace MR.AspNetCore.Jobs
 
 		public Task<Job> GetNextJobToBeEnqueuedAsync()
 		{
-			var sql = @"
+			var sql = $@"
 				SELECT TOP (1) *
 				FROM [Jobs].Jobs WITH (readpast)
-				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = @StateName";
+				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
 			return _storage.UseConnectionAsync(async connection =>
 			{
-				return (await connection.QueryAsync<Job>(sql, new
-				{
-					ScheduledState.StateName
-				})).FirstOrDefault();
+				return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
 			});
 		}
 
