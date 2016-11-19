@@ -12,7 +12,7 @@ namespace MR.AspNetCore.Jobs
 		public CronJobRegistry CronJobRegistry { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the polling delay used by the processors when polling the server.
+		/// Gets or sets the polling delay in seconds used by the processors when polling the server.
 		/// </summary>
 		public int PollingDelay { get; set; } = 15;
 

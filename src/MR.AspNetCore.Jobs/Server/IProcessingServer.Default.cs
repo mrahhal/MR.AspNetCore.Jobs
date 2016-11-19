@@ -10,40 +10,41 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class ProcessingServer : IProcessingServer, IDisposable
 	{
-		private CancellationTokenSource _cts;
-		private Task _compositeTask;
-		private IProcessor[] _processors;
-		private ILogger<ProcessingServer> _logger;
-		private ProcessingContext _context;
-		private IStorage _storage;
-		private IServiceProvider _provider;
+		private ILogger _logger;
 		private ILoggerFactory _loggerFactory;
-		private DelayedJobProcessor[] _delayedJobProcessors;
+		private IServiceProvider _provider;
+		private IStorage _storage;
 		private JobsOptions _options;
+
+		private CancellationTokenSource _cts;
+		private IProcessor[] _processors;
+		private DelayedJobProcessor[] _delayedJobProcessors;
+		private ProcessingContext _context;
+		private Task _compositeTask;
 		private bool _disposed;
 
 		public ProcessingServer(
+			ILogger<ProcessingServer> logger,
+			ILoggerFactory loggerFactory,
 			IServiceProvider provider,
 			IStorage storage,
-			JobsOptions options,
-			ILoggerFactory loggerFactory,
-			ILogger<ProcessingServer> logger)
+			JobsOptions options)
 		{
+			_logger = logger;
+			_loggerFactory = loggerFactory;
 			_provider = provider;
 			_storage = storage;
 			_options = options;
-			_loggerFactory = loggerFactory;
-			_logger = logger;
 			_cts = new CancellationTokenSource();
 		}
 
 		public void Start()
 		{
-			_logger.LogInformation("Starting the processing server.");
 			var processorCount = Environment.ProcessorCount;
-			_logger.LogInformation($"Detected {processorCount} machine processor(s).");
 			_processors = GetProcessors(processorCount);
-			_logger.LogInformation($"Initiating {_processors.Length} job processors.");
+			_logger.LogInformation($"Starting the processing server.");
+			_logger.LogInformation(
+				$"Detected {processorCount} machine processor(s). Initiating {_processors.Length} job processors.");
 
 			_context = new ProcessingContext(
 				_provider,
@@ -89,11 +90,11 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 			_disposed = true;
 
-			_logger.LogInformation("Shutting down Jobs processing server.");
+			_logger.LogInformation("Shutting down Jobs processing server...");
 			_cts.Cancel();
 			try
 			{
-				_compositeTask.Wait(60000);
+				_compositeTask.Wait((int)TimeSpan.FromSeconds(60).TotalMilliseconds);
 			}
 			catch (AggregateException ex)
 			{
