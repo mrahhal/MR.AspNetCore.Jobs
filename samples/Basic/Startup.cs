@@ -44,6 +44,7 @@ namespace Basic
 
 			// Add jobs to DI
 			services.AddTransient<LogBlogCountJob>();
+			services.AddTransient<RetryableJob>();
 
 			// Services
 			services.AddScoped<FooService>();
