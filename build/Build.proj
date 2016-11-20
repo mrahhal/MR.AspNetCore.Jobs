@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build;Test;Package;PrintVersion" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup>
 		<Major>0</Major>
-		<Minor>4</Minor>
+		<Minor>5</Minor>
 		<Patch>0</Patch>
 		<Quality></Quality>
 
