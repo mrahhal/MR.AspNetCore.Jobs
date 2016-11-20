@@ -28,7 +28,7 @@ namespace MR.AspNetCore.Jobs
 				INSERT INTO [Jobs].Jobs
 				(Data, Added, Due, ExpiresAt, Retries, StateName)
 				VALUES
-				(@data, @added, @due, @expiresAt, @retries, @stateName)
+				(@Data, @Added, @Due, @ExpiresAt, @Retries, @StateName)
 
 				SELECT CAST(SCOPE_IDENTITY() as int)";
 
@@ -36,13 +36,13 @@ namespace MR.AspNetCore.Jobs
 			{
 				return (await connection.QueryAsync<int>(sql, new
 				{
-					id = job.Id,
-					data = job.Data,
-					added = job.Added,
-					due = job.Due,
-					expiresAt = job.ExpiresAt,
-					retries = job.Retries,
-					stateName = job.StateName
+					job.Id,
+					job.Data,
+					job.Added,
+					job.Due,
+					job.ExpiresAt,
+					job.Retries,
+					job.StateName
 				})).Single();
 			});
 			job.Id = id;
@@ -94,17 +94,17 @@ namespace MR.AspNetCore.Jobs
 				INSERT INTO [Jobs].CronJobs
 				(Id, Name, TypeName, Cron, LastRun)
 				VALUES
-				(@id, @name, @typeName, @cron, @lastRun)";
+				(@Id, @Name, @TypeName, @Cron, @LastRun)";
 
 			return _storage.UseConnectionAsync(connection =>
 			{
 				return connection.ExecuteAsync(sql, new
 				{
-					id = job.Id,
-					name = job.Name,
-					typeName = job.TypeName,
-					cron = job.Cron,
-					lastRun = NormalizeDateTime(job.LastRun)
+					job.Id,
+					job.Name,
+					job.TypeName,
+					job.Cron,
+					LastRun = NormalizeDateTime(job.LastRun)
 				});
 			});
 		}
@@ -115,17 +115,17 @@ namespace MR.AspNetCore.Jobs
 
 			var sql = @"
 				UPDATE [Jobs].CronJobs
-				SET TypeName = @typeName, Cron = @cron, LastRun = @lastRun
-				WHERE Id = @id";
+				SET TypeName = @TypeName, Cron = @Cron, LastRun = @LastRun
+				WHERE Id = @Id";
 
 			return _storage.UseConnectionAsync(connection =>
 			{
 				return connection.ExecuteAsync(sql, new
 				{
-					id = job.Id,
-					typeName = job.TypeName,
-					cron = job.Cron,
-					lastRun = job.LastRun
+					job.Id,
+					job.TypeName,
+					job.Cron,
+					job.LastRun
 				});
 			});
 		}
