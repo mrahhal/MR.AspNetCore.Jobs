@@ -111,7 +111,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			computedJob.UpdateNext(now);
 
-			var retryBehavior = computedJob.RetryBehavior;
+			var retryBehavior = computedJob.RetryBehavior ?? RetryBehavior.DefaultRetry;
 			var retries = computedJob.Retries;
 
 			if (retries == 0)
