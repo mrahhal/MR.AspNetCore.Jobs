@@ -12,16 +12,21 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 		}
 
-		public ComputedCronJob(CronJob job, CronJobRegistry.Entry entry)
+		public ComputedCronJob(CronJob job)
 		{
 			Job = job;
-			_entry = entry;
 
 			Schedule = CrontabSchedule.Parse(job.Cron);
 			if (job.TypeName != null)
 			{
 				JobType = Type.GetType(job.TypeName);
 			}
+		}
+
+		public ComputedCronJob(CronJob job, CronJobRegistry.Entry entry)
+			: this(job)
+		{
+			_entry = entry;
 		}
 
 		public CronJob Job { get; set; }

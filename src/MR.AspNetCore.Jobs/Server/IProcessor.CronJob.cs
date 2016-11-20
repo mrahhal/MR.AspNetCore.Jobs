@@ -69,11 +69,6 @@ namespace MR.AspNetCore.Jobs.Server
 
 				context.ThrowIfStopping();
 
-				if (computedJob.Retries > 0 && computedJob.FirstTry < computedJob.Next)
-				{
-					computedJob.Retries = 0;
-				}
-
 				using (var scopedContext = context.CreateScope())
 				{
 					var factory = scopedContext.Provider.GetService<IJobFactory>();
@@ -91,16 +86,20 @@ namespace MR.AspNetCore.Jobs.Server
 					catch (Exception ex)
 					{
 						success = false;
+						if (computedJob.Retries == 0)
+						{
+							computedJob.FirstTry = DateTime.UtcNow;
+						}
 						computedJob.Retries++;
 						_logger.CronJobFailed(computedJob.Job.Name, ex);
 					}
 
 					if (success)
 					{
+						now = DateTime.UtcNow;
+						computedJob.Update(now);
 						using (var connection = storage.GetConnection())
 						{
-							now = DateTime.UtcNow;
-							computedJob.Update(now);
 							await connection.UpdateCronJobAsync(computedJob.Job);
 						}
 					}
@@ -122,16 +121,19 @@ namespace MR.AspNetCore.Jobs.Server
 
 			var realNext = computedJob.Schedule.GetNextOccurrence(now);
 
-			if (retries > 0 && !retryBehavior.Retry)
+			if (!retryBehavior.Retry)
 			{
+				// No retry. If job failed before, we don't care, just schedule it next as usual.
 				return realNext;
 			}
 
 			if (retries >= retryBehavior.RetryCount)
 			{
+				// Max retries. Just schedule it for the next occurance.
 				return realNext;
 			}
 
+			// Delay a bit.
 			return computedJob.FirstTry.AddSeconds(retryBehavior.RetryIn(retries));
 		}
 

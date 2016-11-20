@@ -12,6 +12,18 @@ namespace MR.AspNetCore.Jobs.Models
 			Id = Guid.NewGuid().ToString();
 		}
 
+		public CronJob(string cron)
+			: this()
+		{
+			Cron = cron;
+		}
+
+		public CronJob(string cron, DateTime lastRun)
+			: this(cron)
+		{
+			LastRun = lastRun;
+		}
+
 		public string Id { get; set; }
 		public string Name { get; set; }
 		public string TypeName { get; set; }
