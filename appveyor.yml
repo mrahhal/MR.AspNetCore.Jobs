@@ -7,7 +7,7 @@ environment:
 services:
   - mssql2012sp1
 before_build:
-  - 'powershell "ConfigureMSDTC.ps1"'
+  - ps: .\ConfigureMSDTC.ps1
 build:
   project: build/Build.proj
   verbosity: normal
