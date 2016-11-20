@@ -42,7 +42,7 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
-		/*[Fact]
+		[Fact]
 		public async Task FetchNextJobAsync_ReadsPast()
 		{
 			// Arrange
@@ -69,7 +69,7 @@ namespace MR.AspNetCore.Jobs
 			{
 				connection.Query<Job>("SELECT * FROM [Jobs].JobQueue").Count().Should().Be(0);
 			});
-		}*/
+		}
 
 		[Fact]
 		public async Task FetchNextJobAsync_NoJobs_ReturnsNull()
