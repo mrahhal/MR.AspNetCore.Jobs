@@ -16,7 +16,7 @@ namespace MR.AspNetCore.Jobs
 			_collectingExpiredEntities = LoggerMessage.Define(
 				LogLevel.Debug,
 				1,
-				"Collecting expired entities");
+				"Collecting expired entities.");
 
 			_installing = LoggerMessage.Define(
 				LogLevel.Debug,
