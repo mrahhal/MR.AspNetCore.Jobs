@@ -79,7 +79,7 @@ BEGIN
 		[Due] ASC,
 		[StateName] ASC
 	);
-	PRINT 'Created index [IX_Jobs_Jobs_Due]';
+	PRINT 'Created index [IX_Jobs_Jobs_DueAndStateName]';
 
 	CREATE NONCLUSTERED INDEX [IX_Jobs_Jobs_StateName] ON [Jobs].[Jobs] ([StateName] ASC);
 	PRINT 'Created index [IX_Jobs_Jobs_StateName]';
@@ -92,7 +92,7 @@ BEGIN
 
 		CONSTRAINT [PK_Jobs_JobQueue] PRIMARY KEY CLUSTERED ([Id] ASC)
 	);
-	PRINT 'Created table [Jobs].[Jobs]';
+	PRINT 'Created table [Jobs].[JobQueue]';
 
 	SET @CURRENT_SCHEMA_VERSION = 1;
 END
