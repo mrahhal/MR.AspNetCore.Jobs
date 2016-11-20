@@ -133,6 +133,9 @@ services.AddJobs(options =>
 
 After the processing server starts it will know when to execute cron jobs whenever needed without your intervention.
 
+## Retrying behavior
+All kinds of jobs can be given different retrying behaviors. For delayed jobs, you are required to implement your job inside a class that implements `IRetryable`, else the default behavior will be used. `IRetryable` has one property called `RetryBehavior` that returns an instance of `RetryBehavior` which will be used to determine whether and when to retry a failed job before marking it as failed. You can use `RetryBehavior.DefaultRetry`, `RetryBehavior.NoRetry`, or your own subclass that overrides this behavior.
+
 ## Samples
 
 - [`Basic`](/samples/Basic): implements Jobs in an Asp.Net Core app.
