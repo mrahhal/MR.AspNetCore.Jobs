@@ -1,28 +1,31 @@
 ﻿{
-  "version": "1.0.0-*",
+  "version": "0.5.0-*",
   "description": "A Microsoft SQL Server adapter for MR.AspNetCore.Jobs.",
-  "authors": [ "Mohammad Rahhal" ],
-
+  "authors": [
+    "Mohammad Rahhal"
+  ],
   "packOptions": {
-    "tags": [ "aspnetcore", "background", "jobs", "sql", "sqlserver" ],
+    "tags": [
+      "aspnetcore",
+      "background",
+      "jobs",
+      "sql",
+      "sqlserver"
+    ],
     "projectUrl": "https://github.com/mrahhal/MR.AspNetCore.Jobs",
     "licenseUrl": "https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt"
   },
-
   "buildOptions": {
     "embed": [
       "install.sql"
     ]
   },
-
   "dependencies": {
     "Microsoft.Extensions.Options": "1.1.0",
     "MR.AspNetCore.Jobs": "*"
   },
-
   "frameworks": {
-    "net451": {
-    },
+    "net451": {},
     "netstandard1.5": {
       "imports": [
         "dnxcore50",
