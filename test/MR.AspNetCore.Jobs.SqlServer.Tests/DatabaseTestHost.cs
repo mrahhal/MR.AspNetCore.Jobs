@@ -1,5 +1,5 @@
+using System.Data;
 using System.Data.SqlClient;
-using System.Transactions;
 using Dapper;
 
 namespace MR.AspNetCore.Jobs
@@ -7,7 +7,6 @@ namespace MR.AspNetCore.Jobs
 	public abstract class DatabaseTestHost : TestHost
 	{
 		private static bool _sqlObjectInstalled;
-		private TransactionScope _transaction;
 
 		public DatabaseTestHost()
 		{
@@ -16,31 +15,44 @@ namespace MR.AspNetCore.Jobs
 				CreateAndInitializeDatabaseIfNotExists();
 				_sqlObjectInstalled = true;
 			}
-
-			_transaction = new TransactionScope(
-				TransactionScopeOption.RequiresNew,
-				new TransactionOptions { IsolationLevel = IsolationLevel.ReadCommitted },
-				TransactionScopeAsyncFlowOption.Enabled);
 		}
 
 		public override void Dispose()
 		{
+			using (var connection = ConnectionUtil.CreateConnection())
+			{
+				var commands = new[]
+				{
+					"DISABLE TRIGGER ALL ON ?",
+					"ALTER TABLE ? NOCHECK CONSTRAINT ALL",
+					"DELETE FROM ?",
+					"ALTER TABLE ? CHECK CONSTRAINT ALL",
+					"ENABLE TRIGGER ALL ON ?"
+				};
+				foreach (var command in commands)
+				{
+					connection.Execute(
+						"sp_MSforeachtable",
+						new { command1 = command },
+						commandType: CommandType.StoredProcedure);
+				}
+			}
 			base.Dispose();
-			_transaction.Dispose();
 		}
 
 		private static void CreateAndInitializeDatabaseIfNotExists()
 		{
-			var recreateDatabaseSql = string.Format(
-				@"if db_id('{0}') is null create database [{0}] COLLATE SQL_Latin1_General_CP1_CS_AS",
+			var recreateDatabaseSql = string.Format(@"
+IF DB_ID('{0}') IS NOT NULL DROP DATABASE [{0}];
+CREATE DATABASE [{0}] COLLATE SQL_Latin1_General_CP1_CS_AS;",
 				ConnectionUtil.GetDatabaseName());
 
-			using (var connection = new SqlConnection(ConnectionUtil.GetMasterConnectionString()))
+			using (var connection = ConnectionUtil.CreateConnection(ConnectionUtil.GetMasterConnectionString()))
 			{
 				connection.Execute(recreateDatabaseSql);
 			}
 
-			using (var connection = new SqlConnection(ConnectionUtil.GetConnectionString()))
+			using (var connection = ConnectionUtil.CreateConnection())
 			{
 				SqlServerObjectsInstaller.Install(connection, null);
 			}

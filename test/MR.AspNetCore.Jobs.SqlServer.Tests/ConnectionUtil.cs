@@ -31,13 +31,14 @@ namespace MR.AspNetCore.Jobs
 		private static string GetConnectionStringTemplate()
 		{
 			return
-				Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable)
-				?? DefaultConnectionStringTemplate;
+				Environment.GetEnvironmentVariable(ConnectionStringTemplateVariable) ??
+				DefaultConnectionStringTemplate;
 		}
 
-		public static SqlConnection CreateConnection()
+		public static SqlConnection CreateConnection(string connectionString = null)
 		{
-			var connection = new SqlConnection(GetConnectionString());
+			connectionString = connectionString ?? GetConnectionString();
+			var connection = new SqlConnection(connectionString);
 			connection.Open();
 			return connection;
 		}

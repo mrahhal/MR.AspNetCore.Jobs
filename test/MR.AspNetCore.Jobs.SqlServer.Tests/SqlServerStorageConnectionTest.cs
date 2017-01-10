@@ -225,9 +225,7 @@ namespace MR.AspNetCore.Jobs
 			});
 		}
 
-		// Requeuing won't work directly here because we're using a transaction scope
-		// to clean the database.
-		/*[Fact]
+		[Fact]
 		public async Task FetchNextJob_Requeue()
 		{
 			// Arrange
@@ -246,8 +244,10 @@ namespace MR.AspNetCore.Jobs
 			result.Dispose();
 
 			// Assert
-			(await fixture.FetchNextJobAsync()).Should().NotBeNull();
-		}*/
+			result = await fixture.FetchNextJobAsync();
+			result.Should().NotBeNull();
+			result.Dispose();
+		}
 
 		[Fact]
 		public async Task GetCronJobsAsync()
