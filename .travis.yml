@@ -6,7 +6,7 @@ dotnet: 1.0.0-preview2-1-003177
 
 install:
   - export DOTNET_CLI_TELEMETRY_OPTOUT=1
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; brew install openssl; mkdir -p /usr/local/lib; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; rvm get stable; then brew update; brew install openssl; mkdir -p /usr/local/lib; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 os:
   - linux
   - osx
