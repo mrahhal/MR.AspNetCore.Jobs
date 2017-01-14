@@ -2,4 +2,4 @@
 
 dotnet --info
 dotnet restore
-dotnet test test/MR.AspNetCore.Jobs.Tests -f netcoreapp1.0
+dotnet test test/MR.AspNetCore.Jobs.Tests -f netcoreapp1.1
