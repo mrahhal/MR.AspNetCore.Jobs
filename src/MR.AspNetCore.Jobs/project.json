@@ -19,7 +19,7 @@
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0",
     "Microsoft.Extensions.DependencyInjection": "1.1.0",
     "Microsoft.Extensions.Logging": "1.1.0",
-    "NCrontab": "3.1.0",
+    "NCrontab": "3.3.0",
     "Newtonsoft.Json": "9.0.1"
   },
   "frameworks": {
