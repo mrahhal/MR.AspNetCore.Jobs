@@ -3,7 +3,9 @@
     "dotnet-test-xunit": "2.2.0-preview2-*",
     "FluentAssertions": "4.18.0",
     "Moq": "4.6.38-*",
-    "MR.AspNetCore.Jobs": "*",
+    "MR.AspNetCore.Jobs": {
+      "target": "project"
+    },
     "xunit": "2.2.0-*"
   },
 

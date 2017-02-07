@@ -1,5 +1,5 @@
 ﻿{
-  "version": "0.5.0-*",
+  "version": "0.6.0-*",
   "description": "A Microsoft SQL Server adapter for MR.AspNetCore.Jobs.",
   "authors": [
     "Mohammad Rahhal"
@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Options": "1.1.0",
-    "MR.AspNetCore.Jobs": "*"
+    "MR.AspNetCore.Jobs": {
+      "target": "project"
+    }
   },
   "frameworks": {
     "net451": {},
