@@ -8,7 +8,7 @@ namespace Basic.Models
 		{
 		}
 
-		public AppDbContext(DbContextOptions options) : base(options)
+		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
 		{
 		}
 
