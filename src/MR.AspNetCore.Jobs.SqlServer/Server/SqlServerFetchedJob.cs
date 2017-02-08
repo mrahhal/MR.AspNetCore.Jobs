@@ -2,26 +2,24 @@ using System;
 using System.Data;
 using System.Threading;
 using Dapper;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MR.AspNetCore.Jobs.Server
 {
 	public class SqlServerFetchedJob : IFetchedJob
 	{
-		private SqlServerStorage _storage;
 		private IDbConnection _connection;
-		private IDbTransaction _transaction;
+		private IDbContextTransaction _transaction;
 		private readonly Timer _timer;
 		private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
 		private readonly object _lockObject = new object();
 
 		public SqlServerFetchedJob(
 			int jobId,
-			SqlServerStorage storage,
 			IDbConnection connection,
-			IDbTransaction transaction)
+			IDbContextTransaction transaction)
 		{
 			JobId = jobId;
-			_storage = storage;
 			_connection = connection;
 			_transaction = transaction;
 			_timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
@@ -51,7 +49,6 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				_timer?.Dispose();
 				_transaction.Dispose();
-				_storage.ReleaseConnection(_connection);
 				_connection = null;
 			}
 		}
@@ -62,7 +59,7 @@ namespace MR.AspNetCore.Jobs.Server
 			{
 				try
 				{
-					_connection?.Execute("SELECT 1;", transaction: _transaction);
+					_connection?.Execute("SELECT 1;", transaction: _transaction.GetDbTransaction());
 				}
 				catch
 				{

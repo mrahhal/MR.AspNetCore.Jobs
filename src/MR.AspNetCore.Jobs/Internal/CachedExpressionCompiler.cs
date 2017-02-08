@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace MR.AspNetCore.Jobs.ExpressionUtil
+namespace MR.AspNetCore.Jobs.Internal
 {
 	public static class CachedExpressionCompiler
 	{
@@ -46,10 +46,11 @@ namespace MR.AspNetCore.Jobs.ExpressionUtil
 
 			public static Func<TIn, TOut> Compile(Expression<Func<TIn, TOut>> expr)
 			{
-				return CompileFromIdentityFunc(expr)
-					   ?? CompileFromConstLookup(expr)
-					   ?? CompileFromMemberAccess(expr)
-					   ?? CompileSlow(expr);
+				return
+					CompileFromIdentityFunc(expr) ??
+					CompileFromConstLookup(expr) ??
+					CompileFromMemberAccess(expr) ??
+					CompileSlow(expr);
 			}
 
 			private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)

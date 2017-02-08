@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 using MR.AspNetCore.Jobs.Server.States;
@@ -12,152 +14,90 @@ namespace MR.AspNetCore.Jobs
 {
 	public class SqlServerStorageConnection : IStorageConnection
 	{
-		internal SqlServerStorage _storage;
+		private JobsDbContext _context;
+		private SqlServerOptions _options;
 
-		public SqlServerStorageConnection(SqlServerStorage storage)
+		public SqlServerStorageConnection(
+			JobsDbContext context,
+			SqlServerOptions options)
 		{
-			_storage = storage;
+			_context = context;
+			_options = options;
 		}
 
-		public async Task StoreJobAsync(Job job)
+		public JobsDbContext Context => _context;
+
+		public SqlServerOptions Options => _options;
+
+		public Task StoreJobAsync(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 			job.Due = NormalizeDateTime(job.Due);
 
-			var sql = @"
-				INSERT INTO [Jobs].Jobs
-				(Data, Added, Due, ExpiresAt, Retries, StateName)
-				VALUES
-				(@Data, @Added, @Due, @ExpiresAt, @Retries, @StateName)
-
-				SELECT CAST(SCOPE_IDENTITY() as int)";
-
-			var id = await _storage.UseConnectionAsync(async connection =>
-			{
-				return (await connection.QueryAsync<int>(sql, new
-				{
-					job.Id,
-					job.Data,
-					job.Added,
-					job.Due,
-					job.ExpiresAt,
-					job.Retries,
-					job.StateName
-				})).Single();
-			});
-			job.Id = id;
+			_context.Add(job);
+			return _context.SaveChangesAsync();
 		}
 
 		public Task<Job> GetJobAsync(int id)
 		{
-			var sql = @"
-				SELECT * FROM [Jobs].Jobs
-				WHERE Id = @id";
-
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return (await connection.QueryAsync<Job>(sql, new
-				{
-					id
-				})).FirstOrDefault();
-			});
+			return _context.Jobs.FirstOrDefaultAsync(j => j.Id == id);
 		}
 
 		public Task<IFetchedJob> FetchNextJobAsync()
 		{
-			var sql = @"
+			var sql = $@"
 				DELETE TOP (1)
-				FROM [Jobs].JobQueue WITH (readpast, updlock, rowlock)
+				FROM [{_options.Schema}].[{nameof(JobsDbContext.JobQueue)}] WITH (readpast, updlock, rowlock)
 				OUTPUT DELETED.JobId";
 
 			return FetchNextDelayedJobCoreAsync(sql);
 		}
 
-		public Task<Job> GetNextJobToBeEnqueuedAsync()
+		public async Task<Job> GetNextJobToBeEnqueuedAsync()
 		{
 			var sql = $@"
 				SELECT TOP (1) *
-				FROM [Jobs].Jobs WITH (readpast)
+				FROM [{_options.Schema}].[{nameof(JobsDbContext.Jobs)}] WITH (readpast)
 				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
-			});
+			var connection = _context.GetDbConnection();
+			return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
 		}
 
 		public Task StoreCronJobAsync(CronJob job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
-			var sql = @"
-				INSERT INTO [Jobs].CronJobs
-				(Id, Name, TypeName, Cron, LastRun)
-				VALUES
-				(@Id, @Name, @TypeName, @Cron, @LastRun)";
-
-			return _storage.UseConnectionAsync(connection =>
-			{
-				return connection.ExecuteAsync(sql, new
-				{
-					job.Id,
-					job.Name,
-					job.TypeName,
-					job.Cron,
-					LastRun = NormalizeDateTime(job.LastRun)
-				});
-			});
+			_context.Add(job);
+			return _context.SaveChangesAsync();
 		}
 
 		public Task UpdateCronJobAsync(CronJob job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
-			var sql = @"
-				UPDATE [Jobs].CronJobs
-				SET TypeName = @TypeName, Cron = @Cron, LastRun = @LastRun
-				WHERE Id = @Id";
-
-			return _storage.UseConnectionAsync(connection =>
-			{
-				return connection.ExecuteAsync(sql, new
-				{
-					job.Id,
-					job.TypeName,
-					job.Cron,
-					job.LastRun
-				});
-			});
+			_context.Update(job);
+			return _context.SaveChangesAsync();
 		}
 
 		public Task<CronJob[]> GetCronJobsAsync()
 		{
-			var sql = @"
-				SELECT * FROM [Jobs].CronJobs";
-
-			return _storage.UseConnectionAsync(async connection =>
-			{
-				return
-					(await connection.QueryAsync<CronJob>(sql))
-					.ToArray();
-			});
+			return _context.CronJobs.ToArrayAsync();
 		}
 
-		public Task RemoveCronJobAsync(string name)
+		public async Task RemoveCronJobAsync(string name)
 		{
-			var sql = @"
-				DELETE FROM [Jobs].CronJobs
-				WHERE Name = @name";
-
-			return _storage.UseConnectionAsync(connection =>
+			var cronJob = await _context.CronJobs.FirstOrDefaultAsync(j => j.Name == name);
+			if (cronJob != null)
 			{
-				return connection.ExecuteAsync(sql, new { name });
-			});
+				_context.Remove(cronJob);
+				await _context.SaveChangesAsync();
+			}
 		}
 
 		public IStorageTransaction CreateTransaction()
 		{
-			return new SqlServerStorageTransaction(_storage);
+			return new SqlServerStorageTransaction(this);
 		}
 
 		public void Dispose()
@@ -177,19 +117,19 @@ namespace MR.AspNetCore.Jobs
 		private async Task<IFetchedJob> FetchNextDelayedJobCoreAsync(string sql, object args = null)
 		{
 			FetchedJob fetchedJob = null;
-			var connection = _storage.CreateAndOpenConnection();
-			var transaction = connection.BeginTransaction(IsolationLevel.ReadCommitted);
+			var connection = _context.GetDbConnection();
+			var transaction = _context.Database.CurrentTransaction;
+			transaction = transaction ?? await _context.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
 			try
 			{
 				fetchedJob =
-					(await connection.QueryAsync<FetchedJob>(sql, args, transaction))
+					(await connection.QueryAsync<FetchedJob>(sql, args, transaction.GetDbTransaction()))
 					.FirstOrDefault();
 			}
 			catch (SqlException)
 			{
 				transaction.Dispose();
-				_storage.ReleaseConnection(connection);
 				throw;
 			}
 
@@ -197,13 +137,11 @@ namespace MR.AspNetCore.Jobs
 			{
 				transaction.Rollback();
 				transaction.Dispose();
-				_storage.ReleaseConnection(connection);
 				return null;
 			}
 
 			return new SqlServerFetchedJob(
 				fetchedJob.JobId,
-				_storage,
 				connection,
 				transaction);
 		}

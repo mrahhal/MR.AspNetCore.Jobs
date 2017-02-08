@@ -1,79 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Common;
 using System.Threading.Tasks;
-using Dapper;
+using Microsoft.EntityFrameworkCore.Storage;
 using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs
 {
 	public class SqlServerStorageTransaction : IStorageTransaction, IDisposable
 	{
-		private SqlServerStorage _storage;
+		private SqlServerStorageConnection _connection;
+		private IDbContextTransaction _transaction;
 
-		private readonly Queue<Func<DbConnection, DbTransaction, Task>> _commandQueue
-			= new Queue<Func<DbConnection, DbTransaction, Task>>();
-
-		public SqlServerStorageTransaction(SqlServerStorage storage)
+		public SqlServerStorageTransaction(SqlServerStorageConnection connection)
 		{
-			_storage = storage;
+			_connection = connection;
+			_transaction = connection.Context.Database.BeginTransaction();
 		}
 
 		public void UpdateJob(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
-
-			var sql = @"
-				UPDATE [Jobs].Jobs
-				SET Due = @due, ExpiresAt = @expiresAt, Retries = @retries, StateName = @stateName
-				WHERE Id = @id";
-
-			QueueCommand((connection, transaction) =>
-			{
-				return connection.ExecuteAsync(sql, new
-				{
-					id = job.Id,
-					due = job.Due,
-					expiresAt = job.ExpiresAt,
-					retries = job.Retries,
-					stateName = job.StateName
-				}, transaction);
-			});
+			_connection.Context.Update(job);
 		}
 
-		public void EnqueueJob(int id)
+		public void EnqueueJob(Job job)
 		{
-			var sql = @"
-				INSERT INTO [Jobs].JobQueue
-				(JobId) VALUES (@jobId)";
-
-			QueueCommand((connection, transaction) =>
+			if (job == null) throw new ArgumentNullException(nameof(job));
+			_connection.Context.Add(new JobQueue
 			{
-				return connection.ExecuteAsync(sql, new
-				{
-					jobId = id
-				}, transaction);
+				JobId = job.Id
 			});
 		}
 
 		public Task CommitAsync()
 		{
-			return _storage.UseTransactionAsync(async (connection, transaction) =>
-			{
-				foreach (var command in _commandQueue)
-				{
-					await command(connection, transaction);
-				}
-			});
+			_transaction.Commit();
+			return _connection.Context.SaveChangesAsync();
 		}
 
 		public void Dispose()
 		{
-		}
-
-		internal void QueueCommand(Func<DbConnection, DbTransaction, Task> func)
-		{
-			_commandQueue.Enqueue(func);
 		}
 	}
 }

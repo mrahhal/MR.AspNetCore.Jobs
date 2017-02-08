@@ -9,13 +9,8 @@ namespace MR.AspNetCore.Jobs
 	public interface IStorage
 	{
 		/// <summary>
-		/// Initializes the storage.
+		/// Initializes the storage. For example, making sure a database is created and migrations are applied.
 		/// </summary>
 		Task InitializeAsync(CancellationToken cancellationToken);
-
-		/// <summary>
-		/// Returns an <see cref="IStorageConnection"/> that is connected to this storage.
-		/// </summary>
-		IStorageConnection GetConnection();
 	}
 }

@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using MR.AspNetCore.Jobs.Models;
+using MR.AspNetCore.Jobs.Server;
 using MR.AspNetCore.Jobs.Server.States;
 using Xunit;
 
@@ -12,19 +12,6 @@ namespace MR.AspNetCore.Jobs
 {
 	public class SqlServerStorageConnectionTest : DatabaseTestHost
 	{
-		private IServiceProvider _provider;
-
-		public SqlServerStorageConnectionTest()
-		{
-			var services = new ServiceCollection();
-			services.AddOptions();
-			services.AddLogging();
-			services.AddTransient<SqlServerStorage>();
-			services.Configure<SqlServerOptions>(
-				options => options.ConnectionString = ConnectionUtil.GetConnectionString());
-			_provider = services.BuildServiceProvider();
-		}
-
 		[Fact]
 		public async Task StoreJobAsync()
 		{
@@ -36,39 +23,48 @@ namespace MR.AspNetCore.Jobs
 			await fixture.StoreJobAsync(job);
 
 			// Assert
-			fixture._storage.UseConnection(connection =>
-			{
-				connection.Query<Job>("SELECT * FROM [Jobs].Jobs").Count().Should().NotBe(0);
-			});
+			fixture.Context.Jobs.Any().Should().BeTrue();
 		}
 
 		[Fact]
 		public async Task FetchNextJobAsync_ReadsPast()
 		{
 			// Arrange
-			var fixture = Create();
-			var job1 = new Job("data");
-			var job2 = new Job("data");
-			await fixture.StoreJobAsync(job1);
-			await fixture.StoreJobAsync(job2);
-
-			fixture._storage.UseConnection(connection =>
+			using (CreateScope())
 			{
-				connection.Execute("INSERT INTO [Jobs].JobQueue (JobId) VALUES (@Id)", new[] { job1, job2 });
-			});
+				var fixture = Create();
+				var job1 = new Job("data");
+				var job2 = new Job("data");
+				await fixture.StoreJobAsync(job1);
+				await fixture.StoreJobAsync(job2);
+
+				fixture.Context.AddRange(new JobQueue { Job = job1 }, new JobQueue { Job = job2 });
+				fixture.Context.SaveChanges();
+			}
 
 			// Act
-			var fJob1 = await fixture.FetchNextJobAsync();
-			var fJob2 = await fixture.FetchNextJobAsync();
-			fJob1.RemoveFromQueue();
-			fJob2.RemoveFromQueue();
+			IFetchedJob fJob1 = null, fJob2 = null;
+			using (var scope1 = CreateScope(Provider))
+			using (var scope2 = CreateScope(Provider))
+			{
+				var fixture1 = Create(scope1.ServiceProvider);
+				fJob1 = await fixture1.FetchNextJobAsync();
+
+				var fixture2 = Create(scope2.ServiceProvider);
+				fJob2 = await fixture2.FetchNextJobAsync();
+
+				fJob1.RemoveFromQueue();
+				fJob2.RemoveFromQueue();
+			}
 
 			// Assert
 			fJob1.JobId.Should().NotBe(fJob2.JobId);
-			fixture._storage.UseConnection(connection =>
+
+			using (CreateScope())
 			{
-				connection.Query<Job>("SELECT * FROM [Jobs].JobQueue").Count().Should().Be(0);
-			});
+				var fixture = Create();
+				fixture.Context.JobQueue.Any().Should().BeFalse();
+			}
 		}
 
 		[Fact]
@@ -93,7 +89,7 @@ namespace MR.AspNetCore.Jobs
 			await fixture.StoreJobAsync(job);
 			using (var t = fixture.CreateTransaction())
 			{
-				t.EnqueueJob(job.Id);
+				t.EnqueueJob(job);
 				await t.CommitAsync();
 			}
 
@@ -115,7 +111,7 @@ namespace MR.AspNetCore.Jobs
 			await fixture.StoreJobAsync(job);
 			using (var t = fixture.CreateTransaction())
 			{
-				t.EnqueueJob(job.Id);
+				t.EnqueueJob(job);
 				await t.CommitAsync();
 			}
 
@@ -191,10 +187,7 @@ namespace MR.AspNetCore.Jobs
 			await fixture.StoreCronJobAsync(cronJob);
 
 			// Assert
-			fixture._storage.UseConnection(connection =>
-			{
-				connection.Query<CronJob>("SELECT * FROM [Jobs].CronJobs").Count().Should().NotBe(0);
-			});
+			fixture.Context.CronJobs.Any().Should().BeTrue();
 		}
 
 		[Fact]
@@ -217,12 +210,9 @@ namespace MR.AspNetCore.Jobs
 			await fixture.UpdateCronJobAsync(cronJob);
 
 			// Assert
-			fixture._storage.UseConnection(connection =>
-			{
-				var job = connection.Query<CronJob>("SELECT * FROM [Jobs].CronJobs").First();
-				job.LastRun.Should().Be(cronJob.LastRun);
-				job.Cron.Should().Be(cronJob.Cron);
-			});
+			var job = fixture.Context.CronJobs.First();
+			job.LastRun.Should().Be(cronJob.LastRun);
+			job.Cron.Should().Be(cronJob.Cron);
 		}
 
 		[Fact]
@@ -233,10 +223,8 @@ namespace MR.AspNetCore.Jobs
 			var job = new Job("data", DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10)));
 			await fixture.StoreJobAsync(job);
 
-			fixture._storage.UseConnection(connection =>
-			{
-				connection.Execute("INSERT INTO [Jobs].JobQueue (JobId) VALUES (@Id)", new[] { job });
-			});
+			fixture.Context.Add(new JobQueue { Job = job });
+			fixture.Context.SaveChanges();
 
 			// Act
 			var result = await fixture.FetchNextJobAsync();
@@ -278,11 +266,17 @@ namespace MR.AspNetCore.Jobs
 			result.Should().HaveCount(2);
 		}
 
-		private SqlServerStorageConnection Create()
+		protected override void PreBuildServices()
 		{
-			return _provider
-				.GetService<SqlServerStorage>()
-				.GetConnection() as SqlServerStorageConnection;
+			base.PreBuildServices();
+			_services.AddScoped<SqlServerStorageConnection>();
+		}
+
+		private SqlServerStorageConnection Create(IServiceProvider provider = null)
+		{
+			provider = provider ?? Provider;
+			return provider
+				.GetService<SqlServerStorageConnection>();
 		}
 	}
 }

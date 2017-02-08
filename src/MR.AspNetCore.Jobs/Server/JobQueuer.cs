@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server.States;
@@ -13,6 +14,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private ILogger _logger;
 		private JobsOptions _options;
 		private IStateChanger _stateChanger;
+		private IServiceProvider _provider;
 
 		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
 		private TimeSpan _pollingDelay;
@@ -20,11 +22,13 @@ namespace MR.AspNetCore.Jobs.Server
 		public JobQueuer(
 			ILogger<JobQueuer> logger,
 			JobsOptions options,
-			IStateChanger stateChanger)
+			IStateChanger stateChanger,
+			IServiceProvider provider)
 		{
 			_logger = logger;
 			_options = options;
 			_stateChanger = stateChanger;
+			_provider = provider;
 
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
@@ -32,8 +36,11 @@ namespace MR.AspNetCore.Jobs.Server
 		public async Task ProcessAsync(ProcessingContext context)
 		{
 			Job job;
-			using (var connection = context.Storage.GetConnection())
+			using (var scope = _provider.CreateScope())
 			{
+				var provider = scope.ServiceProvider;
+				var connection = provider.GetRequiredService<IStorageConnection>();
+
 				while (
 					!context.IsStopping &&
 					(job = await connection.GetNextJobToBeEnqueuedAsync()) != null)

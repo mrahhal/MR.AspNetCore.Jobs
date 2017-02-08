@@ -10,7 +10,7 @@ using Xunit;
 
 namespace MR.AspNetCore.Jobs
 {
-	public class SqlServerBootstrapperTest : DatabaseTestHost
+	public class SqlServerBootstrapperTest
 	{
 		private Mock<IProcessingServer> _mockProcessingServer;
 		private Mock<IStorage> _mockStorage;
@@ -27,8 +27,8 @@ namespace MR.AspNetCore.Jobs
 			_services.AddSingleton(_mockProcessingServer.Object);
 			_mockStorage = new Mock<IStorage>();
 			_mockStorageConnection = new Mock<IStorageConnection>();
-			_mockStorage.Setup(m => m.GetConnection()).Returns(_mockStorageConnection.Object);
 			_services.AddSingleton(_mockStorage.Object);
+			_services.AddSingleton(_mockStorageConnection.Object);
 			_mockApplicationLifetime = new Mock<IApplicationLifetime>();
 			_services.AddSingleton(_mockApplicationLifetime.Object);
 			_services.AddTransient<SqlServerBootstrapper>();

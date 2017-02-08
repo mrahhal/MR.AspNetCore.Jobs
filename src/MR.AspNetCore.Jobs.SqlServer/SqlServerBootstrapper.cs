@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using MR.AspNetCore.Jobs.Server;
@@ -10,8 +11,9 @@ namespace MR.AspNetCore.Jobs
 			JobsOptions options,
 			IStorage storage,
 			IProcessingServer server,
-			IApplicationLifetime appLifetime)
-			: base(options, storage, server, appLifetime)
+			IApplicationLifetime appLifetime,
+			IServiceProvider provider)
+			: base(options, storage, server, appLifetime, provider)
 		{
 		}
 

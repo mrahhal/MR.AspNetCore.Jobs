@@ -21,10 +21,13 @@
     ]
   },
   "dependencies": {
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0",
     "Microsoft.Extensions.Options": "1.1.0",
     "MR.AspNetCore.Jobs": {
       "target": "project"
     }
+  },
+  "tools": {
   },
   "frameworks": {
     "net451": {},

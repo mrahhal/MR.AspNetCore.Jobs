@@ -25,9 +25,13 @@ namespace MR.AspNetCore.Jobs.Models
 		}
 
 		public string Id { get; set; }
+
 		public string Name { get; set; }
+
 		public string TypeName { get; set; }
+
 		public string Cron { get; set; }
+
 		public DateTime LastRun { get; set; }
 	}
 }

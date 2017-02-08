@@ -1,6 +1,7 @@
 using System.Data;
-using System.Data.SqlClient;
 using Dapper;
+using Microsoft.EntityFrameworkCore;
+using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -8,19 +9,38 @@ namespace MR.AspNetCore.Jobs
 	{
 		private static bool _sqlObjectInstalled;
 
-		public DatabaseTestHost()
+		protected override void PostBuildServices()
 		{
-			if (!_sqlObjectInstalled)
-			{
-				CreateAndInitializeDatabaseIfNotExists();
-				_sqlObjectInstalled = true;
-			}
+			base.PostBuildServices();
+			InitializeDatabase();
 		}
 
 		public override void Dispose()
 		{
-			using (var connection = ConnectionUtil.CreateConnection())
+			DeleteAllData();
+			base.Dispose();
+		}
+
+		private void InitializeDatabase()
+		{
+			if (!_sqlObjectInstalled)
 			{
+				using (CreateScope())
+				{
+					var context = GetService<JobsDbContext>();
+					context.Database.EnsureDeleted();
+					context.Database.Migrate();
+					_sqlObjectInstalled = true;
+				}
+			}
+		}
+
+		private void DeleteAllData()
+		{
+			using (CreateScope())
+			{
+				var context = GetService<JobsDbContext>();
+
 				var commands = new[]
 				{
 					"DISABLE TRIGGER ALL ON ?",
@@ -31,30 +51,11 @@ namespace MR.AspNetCore.Jobs
 				};
 				foreach (var command in commands)
 				{
-					connection.Execute(
+					context.GetDbConnection().Execute(
 						"sp_MSforeachtable",
 						new { command1 = command },
 						commandType: CommandType.StoredProcedure);
 				}
-			}
-			base.Dispose();
-		}
-
-		private static void CreateAndInitializeDatabaseIfNotExists()
-		{
-			var recreateDatabaseSql = string.Format(@"
-IF DB_ID('{0}') IS NOT NULL DROP DATABASE [{0}];
-CREATE DATABASE [{0}] COLLATE SQL_Latin1_General_CP1_CS_AS;",
-				ConnectionUtil.GetDatabaseName());
-
-			using (var connection = ConnectionUtil.CreateConnection(ConnectionUtil.GetMasterConnectionString()))
-			{
-				connection.Execute(recreateDatabaseSql);
-			}
-
-			using (var connection = ConnectionUtil.CreateConnection())
-			{
-				SqlServerObjectsInstaller.Install(connection, null);
 			}
 		}
 	}

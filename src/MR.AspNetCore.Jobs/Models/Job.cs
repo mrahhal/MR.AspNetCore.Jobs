@@ -1,5 +1,4 @@
 using System;
-using MR.AspNetCore.Jobs.Server;
 using MR.AspNetCore.Jobs.Server.States;
 
 namespace MR.AspNetCore.Jobs.Models
@@ -28,11 +27,17 @@ namespace MR.AspNetCore.Jobs.Models
 		}
 
 		public int Id { get; set; }
+
 		public string Data { get; set; }
+
 		public DateTime Added { get; set; }
+
 		public DateTime? Due { get; set; }
+
 		public DateTime? ExpiresAt { get; set; }
+
 		public int Retries { get; set; }
+
 		public string StateName { get; set; }
 	}
 }

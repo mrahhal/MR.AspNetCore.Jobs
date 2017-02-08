@@ -12,10 +12,14 @@ namespace MR.AspNetCore.Jobs.Server
 	public class CronJobProcessor : IProcessor
 	{
 		private ILogger _logger;
+		private IServiceProvider _provider;
 
-		public CronJobProcessor(ILogger<CronJobProcessor> logger)
+		public CronJobProcessor(
+			ILogger<CronJobProcessor> logger,
+			IServiceProvider provider)
 		{
 			_logger = logger;
+			_provider = provider;
 		}
 
 		public override string ToString() => nameof(CronJobProcessor);
@@ -98,8 +102,11 @@ namespace MR.AspNetCore.Jobs.Server
 					{
 						now = DateTime.UtcNow;
 						computedJob.Update(now);
-						using (var connection = storage.GetConnection())
+						using (var scope = _provider.CreateScope())
 						{
+							var provider = scope.ServiceProvider;
+							var connection = provider.GetRequiredService<IStorageConnection>();
+
 							await connection.UpdateCronJobAsync(computedJob.Job);
 						}
 					}
@@ -139,8 +146,11 @@ namespace MR.AspNetCore.Jobs.Server
 
 		private async Task<CronJob[]> GetJobsAsync(IStorage storage)
 		{
-			using (var connection = storage.GetConnection())
+			using (var scope = _provider.CreateScope())
 			{
+				var provider = scope.ServiceProvider;
+				var connection = provider.GetRequiredService<IStorageConnection>();
+
 				return await connection.GetCronJobsAsync();
 			}
 		}

@@ -16,6 +16,7 @@ namespace MR.AspNetCore.Jobs.Server
 		protected ILogger _logger;
 		protected JobsOptions _options;
 		private IStateChanger _stateChanger;
+		private IServiceProvider _provider;
 
 		private readonly TimeSpan _pollingDelay;
 		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
@@ -23,11 +24,13 @@ namespace MR.AspNetCore.Jobs.Server
 		public DelayedJobProcessor(
 			ILogger<DelayedJobProcessor> logger,
 			JobsOptions options,
-			IStateChanger stateChanger)
+			IStateChanger stateChanger,
+			IServiceProvider provider)
 		{
+			_logger = logger;
 			_options = options;
 			_stateChanger = stateChanger;
-			_logger = logger;
+			_provider = provider;
 
 			_pollingDelay = TimeSpan.FromSeconds(_options.PollingDelay);
 		}
@@ -66,8 +69,11 @@ namespace MR.AspNetCore.Jobs.Server
 		private async Task<bool> Step(ProcessingContext context)
 		{
 			var fetched = default(IFetchedJob);
-			using (var connection = context.Storage.GetConnection())
+			using (var scope = _provider.CreateScope())
 			{
+				var provider = scope.ServiceProvider;
+				var connection = provider.GetRequiredService<IStorageConnection>();
+
 				if ((fetched = await connection.FetchNextJobAsync()) != null)
 				{
 					using (fetched)

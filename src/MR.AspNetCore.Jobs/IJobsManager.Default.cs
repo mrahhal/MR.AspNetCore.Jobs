@@ -16,17 +16,20 @@ namespace MR.AspNetCore.Jobs
 		private IStorage _storage;
 		private IProcessingServer _server;
 		private IStateChanger _stateChanger;
+		private IStorageConnection _connection;
 
 		public JobsManager(
 			JobsOptions options,
 			IStorage storage,
 			IStateChanger stateChanger,
-			IProcessingServer server)
+			IProcessingServer server,
+			IStorageConnection connection)
 		{
 			_options = options;
 			_storage = storage;
 			_stateChanger = stateChanger;
 			_server = server;
+			_connection = connection;
 		}
 
 		public async Task EnqueueAsync(Expression<Action> methodCall)
@@ -81,22 +84,19 @@ namespace MR.AspNetCore.Jobs
 		{
 			if (state == null) throw new ArgumentNullException(nameof(state));
 
-			using (var connection = _storage.GetConnection())
+			var job = await _connection.GetJobAsync(jobId);
+			if (job == null)
 			{
-				var job = await connection.GetJobAsync(jobId);
-				if (job == null)
-				{
-					return false;
-				}
-
-				if (expectedState != null && !job.StateName.Equals(expectedState, StringComparison.OrdinalIgnoreCase))
-				{
-					return false;
-				}
-
-				await _stateChanger.ChangeStateAsync(job, state, connection);
-				return true;
+				return false;
 			}
+
+			if (expectedState != null && !job.StateName.Equals(expectedState, StringComparison.OrdinalIgnoreCase))
+			{
+				return false;
+			}
+
+			await _stateChanger.ChangeStateAsync(job, state, _connection);
+			return true;
 		}
 
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
@@ -105,10 +105,7 @@ namespace MR.AspNetCore.Jobs
 			var job = new Job(data.Serialize());
 			job.Due = due;
 
-			using (var connection = _storage.GetConnection())
-			{
-				await connection.StoreJobAsync(job);
-			}
+			await _connection.StoreJobAsync(job);
 			if (job.Due == null)
 			{
 				_server.Pulse();

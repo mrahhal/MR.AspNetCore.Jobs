@@ -1,17 +1,17 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using MR.AspNetCore.Jobs;
 using MR.AspNetCore.Jobs.Server;
 using MR.AspNetCore.Jobs.Server.States;
 
-namespace MR.AspNetCore.Jobs
+namespace Microsoft.Extensions.DependencyInjection
 {
-	public static class ServiceCollectionExtensions
+	public static class JobsServiceCollectionExtensions
 	{
 		public static void AddJobs(
 			this IServiceCollection services,
 			Action<JobsOptions> configure)
 		{
-			services.AddSingleton<IJobsManager, JobsManager>();
+			services.AddScoped<IJobsManager, JobsManager>();
 			services.AddSingleton<IJobFactory, JobFactory>();
 			services.AddSingleton<IProcessingServer, ProcessingServer>();
 			services.AddSingleton<IStateChanger, StateChanger>();

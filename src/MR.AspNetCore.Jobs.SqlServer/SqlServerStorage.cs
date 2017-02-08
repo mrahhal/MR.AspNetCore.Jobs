@@ -1,155 +1,156 @@
 using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using MR.AspNetCore.Jobs.Models;
 
 namespace MR.AspNetCore.Jobs
 {
 	public class SqlServerStorage : IStorage
 	{
-		private string _connectionString;
-		private ILoggerFactory _loggerFactory;
+		private IServiceProvider _provider;
+		private ILogger _logger;
 
 		public SqlServerStorage(
-			IOptions<SqlServerOptions> options,
-			ILoggerFactory loggerFactory)
+			IServiceProvider provider,
+			ILogger<SqlServerStorage> logger)
 		{
-			_connectionString = options.Value.ConnectionString;
-			_loggerFactory = loggerFactory;
+			_provider = provider;
+			_logger = logger;
 		}
 
-		public Task InitializeAsync(CancellationToken cancellationToken)
+		public async Task InitializeAsync(CancellationToken cancellationToken)
 		{
-			UseConnection(connection =>
+			using (var scope = _provider.CreateScope())
 			{
 				if (cancellationToken.IsCancellationRequested) return;
 
-				SqlServerObjectsInstaller.Install(
-					connection,
-					_loggerFactory.CreateLogger(typeof(SqlServerObjectsInstaller)));
-			});
-			return Task.FromResult(0);
-		}
+				var provider = scope.ServiceProvider;
+				var context = provider.GetRequiredService<JobsDbContext>();
 
-		public IStorageConnection GetConnection() => new SqlServerStorageConnection(this);
-
-		internal void UseConnection(Action<SqlConnection> action)
-		{
-			UseConnection(connection =>
-			{
-				action(connection);
-				return true;
-			});
-		}
-
-		internal T UseConnection<T>(Func<SqlConnection, T> func)
-		{
-			SqlConnection connection = null;
-
-			try
-			{
-				connection = CreateAndOpenConnection();
-				return func(connection);
-			}
-			finally
-			{
-				ReleaseConnection(connection);
+				_logger.LogDebug("Ensuring all migrations are applied to Jobs database.");
+				await context.Database.MigrateAsync(cancellationToken);
 			}
 		}
 
-		internal Task UseConnectionAsync(Func<SqlConnection, Task> action)
-		{
-			return UseConnectionAsync(async connection =>
-			{
-				await action(connection);
-				return true;
-			});
-		}
+		//public IStorageConnection GetConnection() => _provider.GetRequiredService<IStorageConnection>();
 
-		internal async Task<T> UseConnectionAsync<T>(Func<SqlConnection, Task<T>> func)
-		{
-			SqlConnection connection = null;
+		//internal void UseConnection(Action<SqlConnection> action)
+		//{
+		//	UseConnection(connection =>
+		//	{
+		//		action(connection);
+		//		return true;
+		//	});
+		//}
 
-			try
-			{
-				connection = CreateAndOpenConnection();
-				return await func(connection);
-			}
-			finally
-			{
-				ReleaseConnection(connection);
-			}
-		}
+		//internal T UseConnection<T>(Func<SqlConnection, T> func)
+		//{
+		//	SqlConnection connection = null;
 
-		internal void UseTransaction(Action<SqlConnection, SqlTransaction> action, IsolationLevel? isolationLevel = null)
-		{
-			UseTransaction((connection, transaction) =>
-			{
-				action(connection, transaction);
-				return true;
-			}, isolationLevel);
-		}
+		//	try
+		//	{
+		//		connection = CreateAndOpenConnection();
+		//		return func(connection);
+		//	}
+		//	finally
+		//	{
+		//		ReleaseConnection(connection);
+		//	}
+		//}
 
-		internal Task UseTransactionAsync(Func<SqlConnection, SqlTransaction, Task> func, IsolationLevel? isolationLevel = null)
-		{
-			return UseTransactionAsync(async (connection, transaction) =>
-			{
-				await func(connection, transaction);
-				return true;
-			}, isolationLevel);
-		}
+		//internal Task UseConnectionAsync(Func<SqlConnection, Task> action)
+		//{
+		//	return UseConnectionAsync(async connection =>
+		//	{
+		//		await action(connection);
+		//		return true;
+		//	});
+		//}
 
-		internal T UseTransaction<T>(Func<SqlConnection, SqlTransaction, T> func, IsolationLevel? isolationLevel = null)
-		{
-			return UseConnection(connection =>
-			{
-				T result;
-				using (var transaction = CreateTransaction(connection, isolationLevel))
-				{
-					result = func(connection, transaction);
-					transaction.Commit();
-				}
-				return result;
-			});
-		}
+		//internal async Task<T> UseConnectionAsync<T>(Func<SqlConnection, Task<T>> func)
+		//{
+		//	SqlConnection connection = null;
 
-		internal async Task<T> UseTransactionAsync<T>(Func<SqlConnection, SqlTransaction, Task<T>> func, IsolationLevel? isolationLevel = null)
-		{
-			return await UseConnectionAsync(async connection =>
-			{
-				T result;
-				using (var transaction = CreateTransaction(connection, isolationLevel))
-				{
-					result = await func(connection, transaction);
-					transaction.Commit();
-				}
-				return result;
-			});
-		}
+		//	try
+		//	{
+		//		connection = CreateAndOpenConnection();
+		//		return await func(connection);
+		//	}
+		//	finally
+		//	{
+		//		ReleaseConnection(connection);
+		//	}
+		//}
 
-		internal SqlConnection CreateAndOpenConnection()
-		{
-			var connection = new SqlConnection(_connectionString);
-			connection.Open();
-			return connection;
-		}
+		//internal void UseTransaction(Action<SqlConnection, SqlTransaction> action, IsolationLevel? isolationLevel = null)
+		//{
+		//	UseTransaction((connection, transaction) =>
+		//	{
+		//		action(connection, transaction);
+		//		return true;
+		//	}, isolationLevel);
+		//}
 
-		internal void ReleaseConnection(IDbConnection connection)
-		{
-			if (connection == null) throw new ArgumentNullException(nameof(connection));
+		//internal Task UseTransactionAsync(Func<SqlConnection, SqlTransaction, Task> func, IsolationLevel? isolationLevel = null)
+		//{
+		//	return UseTransactionAsync(async (connection, transaction) =>
+		//	{
+		//		await func(connection, transaction);
+		//		return true;
+		//	}, isolationLevel);
+		//}
 
-			connection.Dispose();
-		}
+		//internal T UseTransaction<T>(Func<SqlConnection, SqlTransaction, T> func, IsolationLevel? isolationLevel = null)
+		//{
+		//	return UseConnection(connection =>
+		//	{
+		//		T result;
+		//		using (var transaction = CreateTransaction(connection, isolationLevel))
+		//		{
+		//			result = func(connection, transaction);
+		//			transaction.Commit();
+		//		}
+		//		return result;
+		//	});
+		//}
 
-		private SqlTransaction CreateTransaction(SqlConnection connection, IsolationLevel? isolationLevel)
-		{
-			return
-				isolationLevel == null ?
-				connection.BeginTransaction() :
-				connection.BeginTransaction(isolationLevel.Value);
-		}
+		//internal async Task<T> UseTransactionAsync<T>(Func<SqlConnection, SqlTransaction, Task<T>> func, IsolationLevel? isolationLevel = null)
+		//{
+		//	return await UseConnectionAsync(async connection =>
+		//	{
+		//		T result;
+		//		using (var transaction = CreateTransaction(connection, isolationLevel))
+		//		{
+		//			result = await func(connection, transaction);
+		//			transaction.Commit();
+		//		}
+		//		return result;
+		//	});
+		//}
+
+		//internal SqlConnection CreateAndOpenConnection()
+		//{
+		//	var connection = new SqlConnection(_connectionString);
+		//	connection.Open();
+		//	return connection;
+		//}
+
+		//internal void ReleaseConnection(IDbConnection connection)
+		//{
+		//	if (connection == null) throw new ArgumentNullException(nameof(connection));
+
+		//	connection.Dispose();
+		//}
+
+		//private SqlTransaction CreateTransaction(SqlConnection connection, IsolationLevel? isolationLevel)
+		//{
+		//	return
+		//		isolationLevel == null ?
+		//		connection.BeginTransaction() :
+		//		connection.BeginTransaction(isolationLevel.Value);
+		//}
 	}
 }

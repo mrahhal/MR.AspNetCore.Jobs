@@ -33,7 +33,13 @@ namespace Basic
 			services.AddJobs(options =>
 			{
 				// Use the sql server adapter
-				options.UseSqlServer(Configuration["ConnectionStrings:Default"]);
+				options.UseSqlServer(opts =>
+				{
+					opts.ConnectionString = Configuration["ConnectionStrings:Default"];
+
+					// This is the default schema used.
+					//opts.Schema = "Jobs";
+				});
 
 				// Use the cron jobs registry
 				options.UseCronJobRegistry<BasicCronJobRegistry>();

@@ -13,7 +13,7 @@ namespace MR.AspNetCore.Jobs.Server.States
 
 		public void Apply(Job job, IStorageTransaction transaction)
 		{
-			transaction.EnqueueJob(job.Id);
+			transaction.EnqueueJob(job);
 		}
 	}
 }

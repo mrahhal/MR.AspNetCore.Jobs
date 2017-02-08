@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -19,12 +20,14 @@ namespace MR.AspNetCore.Jobs
 			JobsOptions options,
 			IStorage storage,
 			IProcessingServer server,
-			IApplicationLifetime appLifetime)
+			IApplicationLifetime appLifetime,
+			IServiceProvider provider)
 		{
 			Options = options;
 			Storage = storage;
 			Server = server;
 			_appLifetime = appLifetime;
+			Provider = provider;
 
 			_cts = new CancellationTokenSource();
 			_ctsRegistration = appLifetime.ApplicationStopping.Register(() =>
@@ -45,6 +48,8 @@ namespace MR.AspNetCore.Jobs
 		protected IStorage Storage { get; }
 
 		protected IProcessingServer Server { get; }
+
+		public IServiceProvider Provider { get; private set; }
 
 		public Task BootstrapAsync()
 		{
@@ -71,8 +76,11 @@ namespace MR.AspNetCore.Jobs
 		public async Task WorkOutCronJobs()
 		{
 			var entries = Options.CronJobRegistry?.Build() ?? Enumerable.Empty<CronJobRegistry.Entry>().ToArray();
-			using (var connection = Storage.GetConnection())
+			using (var scope = Provider.CreateScope())
 			{
+				var provider = scope.ServiceProvider;
+				var connection = provider.GetService<IStorageConnection>();
+
 				var currentJobs = await connection.GetCronJobsAsync();
 				await WorkOutCronJobsCore(connection, entries, currentJobs);
 			}

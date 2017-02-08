@@ -25,10 +25,6 @@
   "frameworks": {
     "net451": {},
     "netstandard1.5": {
-      "imports": [
-        "dnxcore50",
-        "portable-net45+netcore45+wpa81+wp8"
-      ],
       "dependencies": {
         "NETStandard.Library": "1.6.1",
         "System.Threading.ThreadPool": "4.3.0"

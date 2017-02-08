@@ -31,7 +31,6 @@ namespace MR.AspNetCore.Jobs.Server
 			_mockStorage = new Mock<IStorage>();
 			_mockStorageConnection = new Mock<IStorageConnection>();
 			_mockStorageTransaction = new Mock<IStorageTransaction>();
-			_mockStorage.Setup(m => m.GetConnection()).Returns(_mockStorageConnection.Object);
 			_mockStorageConnection.Setup(m => m.CreateTransaction()).Returns(_mockStorageTransaction.Object);
 			_cancellationTokenSource = new CancellationTokenSource();
 
@@ -40,6 +39,7 @@ namespace MR.AspNetCore.Jobs.Server
 			services.AddLogging();
 			services.AddSingleton(_options);
 			services.AddSingleton(_mockStorage.Object);
+			services.AddSingleton(_mockStorageConnection.Object);
 			services.AddSingleton(_mockStateChanger.Object);
 			services.AddTransient<IJobFactory, JobFactory>();
 			services.AddTransient<NoRetryJob>();

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using MR.AspNetCore.Jobs.ExpressionUtil;
+using MR.AspNetCore.Jobs.Internal;
 
 namespace MR.AspNetCore.Jobs
 {
@@ -153,9 +153,10 @@ namespace MR.AspNetCore.Jobs
 		{
 			var constantExpression = expression as ConstantExpression;
 
-			return constantExpression != null
-				? constantExpression.Value
-				: CachedExpressionCompiler.Evaluate(expression);
+			return
+				constantExpression != null ?
+				constantExpression.Value :
+				CachedExpressionCompiler.Evaluate(expression);
 		}
 	}
 }
