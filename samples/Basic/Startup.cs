@@ -76,7 +76,7 @@ namespace Basic
 			using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
 			{
 				var provider = scope.ServiceProvider;
-				provider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
+				provider.GetRequiredService<AppDbContext>().Database.Migrate();
 			}
 
 			// Starts the processing server
