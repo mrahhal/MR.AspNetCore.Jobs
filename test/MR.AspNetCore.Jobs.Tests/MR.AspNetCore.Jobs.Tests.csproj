@@ -5,7 +5,7 @@
 		<AssemblyName>MR.AspNetCore.Jobs.Tests</AssemblyName>
 		<PackageId>MR.AspNetCore.Jobs.Tests</PackageId>
 		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-		<RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">1.1.1</RuntimeFrameworkVersion>
+		<RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">1.1.0</RuntimeFrameworkVersion>
 		<NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">1.6.1</NetStandardImplicitPackageVersion>
 	</PropertyGroup>
 
