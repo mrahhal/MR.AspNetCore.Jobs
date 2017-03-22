@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1D802FE5-581C-409B-93A1-956ACC57EDDC}"
 EndProject
@@ -12,24 +12,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.travis.yml = .travis.yml
 		appveyor.yml = appveyor.yml
-		global.json = global.json
 		NuGet.config = NuGet.config
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MR.AspNetCore.Jobs", "src\MR.AspNetCore.Jobs\MR.AspNetCore.Jobs.xproj", "{5E429E41-44EE-4A99-BC39-AA228C5FDC32}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{265AD639-AA17-41CD-99C8-C7DEDC697666}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MR.AspNetCore.Jobs.Tests", "test\MR.AspNetCore.Jobs.Tests\MR.AspNetCore.Jobs.Tests.xproj", "{0C055F97-2637-4E05-B75B-B66771E7EA5B}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MR.AspNetCore.Jobs.SqlServer", "src\MR.AspNetCore.Jobs.SqlServer\MR.AspNetCore.Jobs.SqlServer.xproj", "{E1DB96AB-7FB3-4341-9D6B-45FFF1263919}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MR.AspNetCore.Jobs.SqlServer.Tests", "test\MR.AspNetCore.Jobs.SqlServer.Tests\MR.AspNetCore.Jobs.SqlServer.Tests.xproj", "{5BFF6964-6560-4290-88DF-38E38FB16A52}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DC2A9609-24E2-4E31-884B-867810F83FAA}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Basic", "samples\Basic\Basic.xproj", "{DA5E565B-0501-40D2-965A-F0DFD2311800}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F399E16C-19F7-4700-8AB1-852A07D4486C}"
 	ProjectSection(SolutionItems) = preProject
@@ -41,6 +30,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F399E16C
 		build\version.cake = build\version.cake
 		build\version.json = build\version.json
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MR.AspNetCore.Jobs", "src\MR.AspNetCore.Jobs\MR.AspNetCore.Jobs.csproj", "{5E429E41-44EE-4A99-BC39-AA228C5FDC32}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MR.AspNetCore.Jobs.Tests", "test\MR.AspNetCore.Jobs.Tests\MR.AspNetCore.Jobs.Tests.csproj", "{0C055F97-2637-4E05-B75B-B66771E7EA5B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MR.AspNetCore.Jobs.SqlServer", "src\MR.AspNetCore.Jobs.SqlServer\MR.AspNetCore.Jobs.SqlServer.csproj", "{E1DB96AB-7FB3-4341-9D6B-45FFF1263919}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MR.AspNetCore.Jobs.SqlServer.Tests", "test\MR.AspNetCore.Jobs.SqlServer.Tests\MR.AspNetCore.Jobs.SqlServer.Tests.csproj", "{5BFF6964-6560-4290-88DF-38E38FB16A52}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Basic", "samples\Basic\Basic.csproj", "{DA5E565B-0501-40D2-965A-F0DFD2311800}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

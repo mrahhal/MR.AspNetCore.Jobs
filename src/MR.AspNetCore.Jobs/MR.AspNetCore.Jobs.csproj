@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Description>A background processing library for Asp.Net Core.</Description>
+		<VersionPrefix>0.6.0</VersionPrefix>
+		<Authors>Mohammad Rahhal</Authors>
+		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+		<AssemblyName>MR.AspNetCore.Jobs</AssemblyName>
+		<PackageId>MR.AspNetCore.Jobs</PackageId>
+		<PackageTags>aspnetcore;background;jobs</PackageTags>
+		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
+		<NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">1.6.1</NetStandardImplicitPackageVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Dapper" Version="1.50.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.1.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.1" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="1.1.1" />
+		<PackageReference Include="NCrontab" Version="3.3.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+		<Reference Include="System" />
+		<Reference Include="Microsoft.CSharp" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+		<PackageReference Include="System.Threading.ThreadPool" Version="4.3.0" />
+	</ItemGroup>
+
+</Project>

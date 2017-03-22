@@ -30,7 +30,12 @@ Task("Build")
 	var settings = new DotNetCoreBuildSettings
 	{
 		Configuration = build.Configuration,
-		VersionSuffix = build.Version.Suffix
+		VersionSuffix = build.Version.Suffix,
+		ArgumentCustomization = args =>
+		{
+			args.Append($"/p:InformationalVersion={build.Version.VersionWithSuffix()}");
+			return args;
+		}
 	};
 	foreach (var project in build.ProjectFiles)
 	{
@@ -82,12 +87,6 @@ Task("Print")
 	.Does(() =>
 {
 	util.PrintInfo();
-});
-
-Task("Patch")
-	.Does(() =>
-{
-	util.PatchProjectFileVersions();
 });
 
 RunTarget(target);

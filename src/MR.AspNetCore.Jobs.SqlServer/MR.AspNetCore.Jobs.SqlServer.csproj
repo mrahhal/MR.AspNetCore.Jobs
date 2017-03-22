@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Description>A Microsoft SQL Server adapter for MR.AspNetCore.Jobs.</Description>
+		<VersionPrefix>0.6.0</VersionPrefix>
+		<Authors>Mohammad Rahhal</Authors>
+		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+		<AssemblyName>MR.AspNetCore.Jobs.SqlServer</AssemblyName>
+		<PackageId>MR.AspNetCore.Jobs.SqlServer</PackageId>
+		<PackageTags>aspnetcore;background;jobs;sql;sqlserver</PackageTags>
+		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
+		<PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(PackageTargetFallback);dnxcore50;portable-net45+netcore45+wpa81+wp8</PackageTargetFallback>
+		<NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">1.6.1</NetStandardImplicitPackageVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MR.AspNetCore.Jobs\MR.AspNetCore.Jobs.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="1.1.1" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+		<Reference Include="System" />
+		<Reference Include="Microsoft.CSharp" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+		<PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+		<PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+	</ItemGroup>
+
+</Project>
