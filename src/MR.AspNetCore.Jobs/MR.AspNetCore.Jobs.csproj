@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+	<Import Project="../../build/version.props" />
+
 	<PropertyGroup>
 		<Description>A background processing library for Asp.Net Core.</Description>
-		<VersionPrefix>0.6.0</VersionPrefix>
 		<Authors>Mohammad Rahhal</Authors>
 		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
 		<AssemblyName>MR.AspNetCore.Jobs</AssemblyName>
