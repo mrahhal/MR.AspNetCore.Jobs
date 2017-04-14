@@ -21,7 +21,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="1.1.1" />
+		<DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
