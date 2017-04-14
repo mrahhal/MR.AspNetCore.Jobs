@@ -46,9 +46,9 @@ namespace MR.AspNetCore.Jobs
 		public Task<IFetchedJob> FetchNextJobAsync()
 		{
 			var sql = $@"
-				DELETE TOP (1)
-				FROM [{_options.Schema}].[{nameof(JobsDbContext.JobQueue)}] WITH (readpast, updlock, rowlock)
-				OUTPUT DELETED.JobId";
+DELETE TOP (1)
+FROM [{_options.Schema}].[{nameof(JobsDbContext.JobQueue)}] WITH (readpast, updlock, rowlock)
+OUTPUT DELETED.JobId";
 
 			return FetchNextDelayedJobCoreAsync(sql);
 		}
@@ -56,9 +56,9 @@ namespace MR.AspNetCore.Jobs
 		public async Task<Job> GetNextJobToBeEnqueuedAsync()
 		{
 			var sql = $@"
-				SELECT TOP (1) *
-				FROM [{_options.Schema}].[{nameof(JobsDbContext.Jobs)}] WITH (readpast)
-				WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
+SELECT TOP (1) *
+FROM [{_options.Schema}].[{nameof(JobsDbContext.Jobs)}] WITH (readpast)
+WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
 			var connection = _context.GetDbConnection();
 			return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();

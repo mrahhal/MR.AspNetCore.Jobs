@@ -11,8 +11,6 @@
 		<PackageTags>aspnetcore;background;jobs;sql;sqlserver</PackageTags>
 		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
 		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
-		<PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(PackageTargetFallback);dnxcore50;portable-net45+netcore45+wpa81+wp8</PackageTargetFallback>
-		<NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.5' ">1.6.1</NetStandardImplicitPackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,6 +21,7 @@
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="1.1.1" />
+
 		<DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0" />
 	</ItemGroup>
 

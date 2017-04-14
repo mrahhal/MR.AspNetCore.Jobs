@@ -159,8 +159,10 @@ namespace MR.AspNetCore.Jobs
 		{
 			// Arrange
 			var fixture = Create();
-			var job = new Job("data", DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10)));
-			job.StateName = EnqueuedState.StateName;
+			var job = new Job("data", DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10)))
+			{
+				StateName = EnqueuedState.StateName
+			};
 			await fixture.StoreJobAsync(job);
 
 			// Act

@@ -14,8 +14,8 @@ namespace MR.AspNetCore.Jobs
 	{
 		private JobsOptions _options;
 		private IStorage _storage;
-		private IProcessingServer _server;
 		private IStateChanger _stateChanger;
+		private IProcessingServer _server;
 		private IStorageConnection _connection;
 
 		public JobsManager(
@@ -102,8 +102,10 @@ namespace MR.AspNetCore.Jobs
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
-			var job = new Job(data.Serialize());
-			job.Due = due;
+			var job = new Job(data.Serialize())
+			{
+				Due = due
+			};
 
 			await _connection.StoreJobAsync(job);
 			if (job.Due == null)

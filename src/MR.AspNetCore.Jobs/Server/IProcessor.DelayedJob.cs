@@ -177,10 +177,10 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			try
 			{
-				var result = method.Method.Invoke(instance, method.Args.ToArray()) as Task;
-				if (result != null)
+				var result = method.Method.Invoke(instance, method.Args.ToArray());
+				if (result is Task taskResult)
 				{
-					await result;
+					await taskResult;
 				}
 				return ExecuteJobResult.Success;
 			}
@@ -234,6 +234,7 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 
 			public bool Succeeded { get; set; }
+
 			public Exception Exception { get; set; }
 		}
 	}

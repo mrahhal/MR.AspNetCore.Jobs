@@ -25,7 +25,8 @@ namespace MR.AspNetCore.Jobs.Internal
 
 		private static Func<object, object> Wrap(Expression arg)
 		{
-			var lambdaExpr = Expression.Lambda<Func<object, object>>(Expression.Convert(arg, typeof(object)), UnusedParameterExpr);
+			var lambdaExpr = Expression.Lambda<Func<object, object>>(
+				Expression.Convert(arg, typeof(object)), UnusedParameterExpr);
 			return Process(lambdaExpr);
 		}
 
@@ -55,8 +56,7 @@ namespace MR.AspNetCore.Jobs.Internal
 
 			private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
 			{
-				ConstantExpression constExpr = expr.Body as ConstantExpression;
-				if (constExpr != null)
+				if (expr.Body is ConstantExpression constExpr)
 				{
 					// model => {const}
 
@@ -87,8 +87,7 @@ namespace MR.AspNetCore.Jobs.Internal
 
 			private static Func<TIn, TOut> CompileFromMemberAccess(Expression<Func<TIn, TOut>> expr)
 			{
-				MemberExpression memberExpr = expr.Body as MemberExpression;
-				if (memberExpr != null)
+				if (expr.Body is MemberExpression memberExpr)
 				{
 					if (memberExpr.Expression == expr.Parameters[0] || memberExpr.Expression == null)
 					{
@@ -96,8 +95,7 @@ namespace MR.AspNetCore.Jobs.Internal
 						return _simpleMemberAccessDict.GetOrAdd(memberExpr.Member, _ => expr.Compile());
 					}
 
-					ConstantExpression constExpr = memberExpr.Expression as ConstantExpression;
-					if (constExpr != null)
+					if (memberExpr.Expression is ConstantExpression constExpr)
 					{
 						// model => {const}.Member (captured local variable)
 						var del = _constMemberAccessDict.GetOrAdd(memberExpr.Member, _ =>

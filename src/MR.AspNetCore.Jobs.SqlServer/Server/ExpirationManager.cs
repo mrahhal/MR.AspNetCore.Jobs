@@ -50,8 +50,8 @@ namespace MR.AspNetCore.Jobs.Server
 						var connection = jobsDbContext.GetDbConnection();
 
 						removedCount = await connection.ExecuteAsync($@"
-							SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-							DELETE TOP (@count) FROM [{_options.Schema}].[{table}] WITH (readpast) WHERE ExpiresAt < @now;",
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+DELETE TOP (@count) FROM [{_options.Schema}].[{table}] WITH (readpast) WHERE ExpiresAt < @now;",
 							new { now = DateTime.UtcNow, count = MaxBatch });
 					}
 

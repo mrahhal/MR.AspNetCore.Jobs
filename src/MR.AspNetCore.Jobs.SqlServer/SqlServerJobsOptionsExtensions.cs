@@ -1,6 +1,7 @@
 using System;
+using MR.AspNetCore.Jobs;
 
-namespace MR.AspNetCore.Jobs
+namespace Microsoft.Extensions.DependencyInjection
 {
 	public static class SqlServerJobsOptionsExtensions
 	{
