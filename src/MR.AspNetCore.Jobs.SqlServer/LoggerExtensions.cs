@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MR.AspNetCore.Jobs
 {
-	internal static class JobsSqlServerLoggerExtensions
+	internal static class LoggerExtensions
 	{
 		private static Action<ILogger, Exception> _collectingExpiredEntities;
 
@@ -11,7 +11,7 @@ namespace MR.AspNetCore.Jobs
 		private static Action<ILogger, Exception> _installingError;
 		private static Action<ILogger, Exception> _installingSuccess;
 
-		static JobsSqlServerLoggerExtensions()
+		static LoggerExtensions()
 		{
 			_collectingExpiredEntities = LoggerMessage.Define(
 				LogLevel.Debug,
@@ -44,9 +44,9 @@ namespace MR.AspNetCore.Jobs
 			_installing(logger, null);
 		}
 
-		public static void InstallingError(this ILogger logger, Exception exception)
+		public static void InstallingError(this ILogger logger, Exception ex)
 		{
-			_installingError(logger, exception);
+			_installingError(logger, ex);
 		}
 
 		public static void InstallingSuccess(this ILogger logger)

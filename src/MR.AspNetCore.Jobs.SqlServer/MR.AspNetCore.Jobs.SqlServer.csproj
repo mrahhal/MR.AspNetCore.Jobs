@@ -11,6 +11,7 @@
 		<PackageTags>aspnetcore;background;jobs;sql;sqlserver</PackageTags>
 		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
 		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
+		<RootNamespace>MR.AspNetCore.Jobs</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

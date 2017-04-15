@@ -97,8 +97,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 							if (job.Retries > 0)
 							{
-								_logger.LogDebug(
-									$"Retrying a job: {job.Retries}...");
+								_logger.JobRetrying(job.Retries);
 							}
 
 							var result = await ExecuteJob(method, instance);
@@ -134,22 +133,14 @@ namespace MR.AspNetCore.Jobs.Server
 						}
 						catch (JobLoadException ex)
 						{
-							_logger.LogWarning(
-								5,
-								ex,
-								"Could not load a job: '{JobId}'.",
-								job.Id);
+							_logger.JobCouldNotBeLoaded(job.Id, ex);
 
 							await _stateChanger.ChangeStateAsync(job, new FailedState(), connection);
 							fetched.RemoveFromQueue();
 						}
 						catch (Exception ex)
 						{
-							_logger.LogWarning(
-								6,
-								ex,
-								"An exception occured while trying to execute a job: '{JobId}'. Requeuing for another retry.",
-								job.Id);
+							_logger.ExceptionOccuredWhileExecutingJob(job.Id, ex);
 
 							fetched.Requeue();
 						}
