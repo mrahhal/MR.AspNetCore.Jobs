@@ -104,7 +104,7 @@ namespace MR.AspNetCore.Jobs.Server
 							var result = await ExecuteJob(method, instance);
 							sp.Stop();
 
-							IState newState = null;
+							var newState = default(IState);
 							if (!result.Succeeded)
 							{
 								var shouldRetry = await UpdateJobForRetryAsync(instance, job, connection);
@@ -124,21 +124,7 @@ namespace MR.AspNetCore.Jobs.Server
 								newState = new SucceededState();
 							}
 
-							if (newState != null)
-							{
-								using (var transaction = connection.CreateTransaction())
-								{
-									if (newState != null)
-									{
-										_stateChanger.ChangeState(job, newState, transaction);
-									}
-									else
-									{
-										transaction.UpdateJob(job);
-									}
-									await transaction.CommitAsync();
-								}
-							}
+							await _stateChanger.ChangeStateAsync(job, newState, connection);
 
 							fetched.RemoveFromQueue();
 							if (result.Succeeded)
