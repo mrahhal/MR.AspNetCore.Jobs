@@ -9,6 +9,8 @@ AppVeyor | Travis
 
 A background processing library for Asp.Net Core.
 
+[CHANGELOG](CHANGELOG.md)
+
 **Note that this is in development so incompatible changes can happen between minor versions.**
 
 ## Overview
