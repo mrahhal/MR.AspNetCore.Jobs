@@ -30,7 +30,10 @@ namespace MR.AspNetCore.Jobs
 
 			services.AddDbContext<JobsDbContext>(options =>
 			{
-				options.UseSqlServer(sqlServerOptions.ConnectionString);
+				options.UseSqlServer(sqlServerOptions.ConnectionString, sqlOpts =>
+				{
+					sqlOpts.MigrationsHistoryTable(sqlServerOptions.MigrationsHistoryTableName, sqlServerOptions.Schema);
+				});
 			});
 		}
 	}

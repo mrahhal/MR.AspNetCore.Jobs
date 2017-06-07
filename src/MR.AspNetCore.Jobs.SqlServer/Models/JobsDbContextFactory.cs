@@ -13,7 +13,11 @@ namespace MR.AspNetCore.Jobs.Models
 			services.AddSingleton(new SqlServerOptions());
 			services.AddDbContext<JobsDbContext>(opts =>
 			{
-				opts.UseSqlServer(JobsDbContext.DevConnectionString);
+				var sqlServerOptions = new SqlServerOptions();
+				opts.UseSqlServer(JobsDbContext.DevConnectionString, sqlOpts =>
+				{
+					sqlOpts.MigrationsHistoryTable(sqlServerOptions.MigrationsHistoryTableName, sqlServerOptions.Schema);
+				});
 			});
 
 			return services.BuildServiceProvider().GetRequiredService<JobsDbContext>();
