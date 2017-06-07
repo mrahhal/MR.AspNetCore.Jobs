@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - SqlServer: Set migration history's table name and schema.
 
 ### Fixed
-- SqlServer: Services not being disposed correctly after a job execution. [#4](https://github.com/mrahhal/MR.AspNetCore.Jobs/issues/4)
+- Services not being disposed correctly after a job execution. [#4](https://github.com/mrahhal/MR.AspNetCore.Jobs/issues/4)
 
 ## [0.6.0] - 2017-04-22
 
