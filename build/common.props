@@ -1,0 +1,16 @@
+<Project>
+
+	<Import Project="version.props" />
+
+	<PropertyGroup Label="Build">
+		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Package">
+		<Product>MR.AspNetCore.Jobs</Product>
+		<Authors>Mohammad Rahhal @mrahhal</Authors>
+		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
+		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
+	</PropertyGroup>
+
+</Project>

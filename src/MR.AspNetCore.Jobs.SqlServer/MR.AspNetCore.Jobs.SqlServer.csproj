@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<Import Project="../../build/version.props" />
+	<Import Project="../../build/common.props" />
 
-	<PropertyGroup>
-		<Description>A Microsoft SQL Server adapter for MR.AspNetCore.Jobs.</Description>
-		<Authors>Mohammad Rahhal</Authors>
+	<PropertyGroup Label="Build">
 		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
-		<AssemblyName>MR.AspNetCore.Jobs.SqlServer</AssemblyName>
-		<PackageId>MR.AspNetCore.Jobs.SqlServer</PackageId>
-		<PackageTags>aspnetcore;background;jobs;sql;sqlserver</PackageTags>
-		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
-		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
 		<RootNamespace>MR.AspNetCore.Jobs</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Package">
+		<Description>A Microsoft SQL Server adapter for MR.AspNetCore.Jobs.</Description>
+		<PackageTags>aspnetcore;background;jobs;sql;sqlserver</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

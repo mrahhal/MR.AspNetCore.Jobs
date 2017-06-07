@@ -1,16 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<Import Project="../../build/version.props" />
+	<Import Project="../../build/common.props" />
 
-	<PropertyGroup>
-		<Description>A background processing library for Asp.Net Core.</Description>
-		<Authors>Mohammad Rahhal</Authors>
+	<PropertyGroup Label="Build">
 		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
-		<AssemblyName>MR.AspNetCore.Jobs</AssemblyName>
-		<PackageId>MR.AspNetCore.Jobs</PackageId>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Package">
+		<Description>A background processing library for Asp.Net Core.</Description>
 		<PackageTags>aspnetcore;background;jobs</PackageTags>
-		<PackageProjectUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs</PackageProjectUrl>
-		<PackageLicenseUrl>https://github.com/mrahhal/MR.AspNetCore.Jobs/blob/master/LICENSE.txt</PackageLicenseUrl>
 	</PropertyGroup>
 
 	<ItemGroup>
