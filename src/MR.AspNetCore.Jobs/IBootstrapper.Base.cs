@@ -75,7 +75,7 @@ namespace MR.AspNetCore.Jobs
 
 		public async Task WorkOutCronJobs()
 		{
-			var entries = Options.CronJobRegistry?.Build() ?? Enumerable.Empty<CronJobRegistry.Entry>().ToArray();
+			var entries = Options.CronJobRegistry?.Build() ?? new CronJobRegistry.Entry[0];
 			using (var scope = Provider.CreateScope())
 			{
 				var provider = scope.ServiceProvider;
@@ -86,7 +86,10 @@ namespace MR.AspNetCore.Jobs
 			}
 		}
 
-		public virtual async Task WorkOutCronJobsCore(IStorageConnection connection, CronJobRegistry.Entry[] entries, CronJob[] currentJobs)
+		public virtual async Task WorkOutCronJobsCore(
+			IStorageConnection connection,
+			CronJobRegistry.Entry[] entries,
+			CronJob[] currentJobs)
 		{
 			if (entries.Length != 0)
 			{

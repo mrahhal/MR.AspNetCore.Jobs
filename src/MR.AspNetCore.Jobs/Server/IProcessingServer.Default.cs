@@ -70,7 +70,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private bool AllProcessorsWaiting()
 		{
 			// Perf: avoid allocation
-			for (int i = 0; i < _delayedJobProcessors.Length; i++)
+			for (var i = 0; i < _delayedJobProcessors.Length; i++)
 			{
 				if (!_delayedJobProcessors[i].Waiting)
 				{
@@ -114,7 +114,7 @@ namespace MR.AspNetCore.Jobs.Server
 			var processors = new List<IProcessor>();
 			var delayedJobProcessors = new List<DelayedJobProcessor>(processorCount);
 
-			for (int i = 0; i < processorCount; i++)
+			for (var i = 0; i < processorCount; i++)
 			{
 				delayedJobProcessors.Add(_provider.GetService<DelayedJobProcessor>());
 				_delayedJobProcessors = delayedJobProcessors.ToArray();

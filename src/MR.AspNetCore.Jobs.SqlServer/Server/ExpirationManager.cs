@@ -36,8 +36,6 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			_logger.CollectingExpiredEntities();
 
-			var storage = context.Storage as SqlServerStorage;
-
 			foreach (var table in Tables)
 			{
 				var removedCount = 0;
@@ -50,8 +48,9 @@ namespace MR.AspNetCore.Jobs.Server
 						var connection = jobsDbContext.GetDbConnection();
 
 						removedCount = await connection.ExecuteAsync($@"
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
-DELETE TOP (@count) FROM [{_options.Schema}].[{table}] WITH (readpast) WHERE ExpiresAt < @now;",
+DELETE TOP (@count)
+FROM [{_options.Schema}].[{table}] WITH (readpast)
+WHERE ExpiresAt < @now;",
 							new { now = DateTime.UtcNow, count = MaxBatch });
 					}
 

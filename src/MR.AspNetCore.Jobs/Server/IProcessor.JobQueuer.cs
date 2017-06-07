@@ -35,9 +35,9 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public async Task ProcessAsync(ProcessingContext context)
 		{
-			Job job;
 			using (var scope = _provider.CreateScope())
 			{
+				Job job;
 				var provider = scope.ServiceProvider;
 				var connection = provider.GetRequiredService<IStorageConnection>();
 

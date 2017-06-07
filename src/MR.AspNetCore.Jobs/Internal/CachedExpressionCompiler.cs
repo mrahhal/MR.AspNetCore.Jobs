@@ -60,7 +60,7 @@ namespace MR.AspNetCore.Jobs.Internal
 				{
 					// model => {const}
 
-					TOut constantValue = (TOut)constExpr.Value;
+					var constantValue = (TOut)constExpr.Value;
 					return _ => constantValue;
 				}
 
@@ -108,7 +108,7 @@ namespace MR.AspNetCore.Jobs.Internal
 							return newLambdaExpr.Compile();
 						});
 
-						object capturedLocal = constExpr.Value;
+						var capturedLocal = constExpr.Value;
 						return _ => del(capturedLocal);
 					}
 				}

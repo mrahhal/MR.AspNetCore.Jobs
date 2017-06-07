@@ -13,6 +13,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			Provider = other.Provider;
 			Storage = other.Storage;
+			CronJobRegistry = other.CronJobRegistry;
 			CancellationToken = other.CancellationToken;
 		}
 
@@ -46,13 +47,15 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public ProcessingContext CreateScope()
 		{
-			var n = new ProcessingContext(this);
-			n._scope = Provider
+			var serviceScope = Provider
 				.GetRequiredService<IServiceScopeFactory>()
 				.CreateScope();
-			n.Provider = n._scope.ServiceProvider;
-			n.CronJobRegistry = CronJobRegistry;
-			return n;
+
+			return new ProcessingContext(this)
+			{
+				_scope = serviceScope,
+				Provider = serviceScope.ServiceProvider
+			};
 		}
 
 		public Task WaitAsync(TimeSpan timeout)

@@ -5,24 +5,25 @@ namespace MR.AspNetCore.Jobs
 {
 	internal static class Helper
 	{
-		private static JsonSerializerSettings _serializerSettings;
+		private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static JsonSerializerSettings SerializerSettings;
 
 		public static void SetSerializerSettings(JsonSerializerSettings setting)
 		{
-			_serializerSettings = setting;
+			SerializerSettings = setting;
 		}
 
 		public static string ToJson(object value)
 		{
 			return value != null
-				? JsonConvert.SerializeObject(value, _serializerSettings)
+				? JsonConvert.SerializeObject(value, SerializerSettings)
 				: null;
 		}
 
 		public static T FromJson<T>(string value)
 		{
 			return value != null
-				? JsonConvert.DeserializeObject<T>(value, _serializerSettings)
+				? JsonConvert.DeserializeObject<T>(value, SerializerSettings)
 				: default(T);
 		}
 
@@ -31,15 +32,13 @@ namespace MR.AspNetCore.Jobs
 			if (type == null) throw new ArgumentNullException(nameof(type));
 
 			return value != null
-				? JsonConvert.DeserializeObject(value, type, _serializerSettings)
+				? JsonConvert.DeserializeObject(value, type, SerializerSettings)
 				: null;
 		}
 
-		private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
 		public static long ToTimestamp(DateTime value)
 		{
-			TimeSpan elapsedTime = value - Epoch;
+			var elapsedTime = value - Epoch;
 			return (long)elapsedTime.TotalSeconds;
 		}
 
