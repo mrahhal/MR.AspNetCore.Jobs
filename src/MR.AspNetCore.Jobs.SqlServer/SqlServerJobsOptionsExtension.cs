@@ -32,7 +32,9 @@ namespace MR.AspNetCore.Jobs
 			{
 				options.UseSqlServer(sqlServerOptions.ConnectionString, sqlOpts =>
 				{
-					sqlOpts.MigrationsHistoryTable(sqlServerOptions.MigrationsHistoryTableName, sqlServerOptions.Schema);
+					sqlOpts.MigrationsHistoryTable(
+						sqlServerOptions.MigrationsHistoryTableName,
+						sqlServerOptions.MigrationsHistoryTableSchema ?? sqlServerOptions.Schema);
 				});
 			});
 		}
