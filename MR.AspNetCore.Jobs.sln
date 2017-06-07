@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DC2A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F399E16C-19F7-4700-8AB1-852A07D4486C}"
 	ProjectSection(SolutionItems) = preProject
+		build.cake = build.cake
 		build.ps1 = build.ps1
 		build.sh = build.sh
 		ConfigureMSDTC.ps1 = ConfigureMSDTC.ps1

@@ -20,7 +20,15 @@ Task("Restore")
 	.IsDependentOn("Clean")
 	.Does(() =>
 {
-	DotNetCoreRestore();
+	var settings = new DotNetCoreRestoreSettings
+	{
+		ArgumentCustomization = args =>
+		{
+			args.Append($"/p:VersionSuffix={build.Version.Suffix}");
+			return args;
+		}
+	};
+	DotNetCoreRestore(settings);
 });
 
 Task("Build")
