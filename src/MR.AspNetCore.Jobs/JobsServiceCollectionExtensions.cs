@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection
 			Action<JobsOptions> configure)
 		{
 			services.AddScoped<IJobsManager, JobsManager>();
-			services.AddSingleton<IJobFactory, JobFactory>();
+			services.AddScoped<IJobFactory, JobFactory>();
 			services.AddSingleton<IProcessingServer, ProcessingServer>();
 			services.AddSingleton<IStateChanger, StateChanger>();
 
