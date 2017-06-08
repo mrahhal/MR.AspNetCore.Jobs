@@ -56,7 +56,7 @@ namespace MR.AspNetCore.Jobs
 		/// <summary>
 		/// Removes a cron job.
 		/// </summary>
-		/// <param name="name">The name if the cron job.</param>
+		/// <param name="name">The name of the cron job.</param>
 		Task RemoveCronJobAsync(string name);
 
 		//-----------------------------------------
