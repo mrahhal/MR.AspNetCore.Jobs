@@ -113,7 +113,7 @@ public class SomeCronJobRegistry : CronJobRegistry
     {
         // Use RegisterJob to register cron jobs:
         // - FooJob should be added to DI because it will be injected when executing the job.
-        // - Give the job a name.
+        // - Give the job a unique name.
         // - Use the Cron class to create various kinds of cron expressions.
         RegisterJob<FooJob>(nameof(FooJob), Cron.Minutely());
     }
