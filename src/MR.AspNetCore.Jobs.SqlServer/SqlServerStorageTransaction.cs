@@ -16,7 +16,8 @@ namespace MR.AspNetCore.Jobs
 		public void UpdateJob(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
-			_connection.Context.Update(job);
+
+			// NOOP. EF will detect changes.
 		}
 
 		public void EnqueueJob(Job job)

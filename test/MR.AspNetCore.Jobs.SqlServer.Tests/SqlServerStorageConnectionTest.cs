@@ -128,12 +128,21 @@ namespace MR.AspNetCore.Jobs
 		public async Task GetNextJobToBeEnqueuedAsync()
 		{
 			// Arrange
-			var fixture = Create();
-			var job = new Job("data", DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10)));
-			await fixture.StoreJobAsync(job);
+			Job job, jobToBeEnqueued;
+
+			using (CreateScope())
+			{
+				var fixture = Create();
+				job = new Job("data", DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10)));
+				await fixture.StoreJobAsync(job);
+			}
 
 			// Act
-			var jobToBeEnqueued = await fixture.GetNextJobToBeEnqueuedAsync();
+			using (CreateScope())
+			{
+				var fixture = Create();
+				jobToBeEnqueued = await fixture.GetNextJobToBeEnqueuedAsync();
+			}
 
 			// Assert
 			jobToBeEnqueued.Id.Should().Be(job.Id);

@@ -62,7 +62,14 @@ FROM [{_options.Schema}].[{nameof(JobsDbContext.Jobs)}] WITH (readpast)
 WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'";
 
 			var connection = _context.GetDbConnection();
-			return (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
+			var job = (await connection.QueryAsync<Job>(sql)).FirstOrDefault();
+
+			if (job != null)
+			{
+				_context.Attach(job);
+			}
+
+			return job;
 		}
 
 		public Task StoreCronJobAsync(CronJob job)
@@ -77,7 +84,6 @@ WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.State
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
-			_context.Update(job);
 			return _context.SaveChangesAsync();
 		}
 
