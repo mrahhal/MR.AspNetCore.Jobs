@@ -277,8 +277,7 @@ namespace MR.AspNetCore.Jobs
 		private SqlServerStorageConnection Create(IServiceProvider provider = null)
 		{
 			provider = provider ?? Provider;
-			return provider
-				.GetService<SqlServerStorageConnection>();
+			return provider.GetService<SqlServerStorageConnection>();
 		}
 	}
 }

@@ -32,6 +32,7 @@ namespace MR.AspNetCore.Jobs
 		public Task StoreJobAsync(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
+
 			job.Due = NormalizeDateTime(job.Due);
 
 			_context.Add(job);

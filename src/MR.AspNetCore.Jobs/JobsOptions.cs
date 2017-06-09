@@ -13,6 +13,7 @@ namespace MR.AspNetCore.Jobs
 
 		/// <summary>
 		/// Gets or sets the polling delay in seconds used by the processors when polling the server.
+		/// Default is 15 seconds.
 		/// </summary>
 		public int PollingDelay { get; set; } = 15;
 
@@ -33,9 +34,7 @@ namespace MR.AspNetCore.Jobs
 		/// <param name="registry">The <see cref="CronJobRegistry"/>.</param>
 		public void UseCronJobRegistry(CronJobRegistry registry)
 		{
-			if (registry == null) throw new ArgumentNullException(nameof(registry));
-
-			CronJobRegistry = registry;
+			CronJobRegistry = registry ?? throw new ArgumentNullException(nameof(registry));
 		}
 
 		/// <summary>
@@ -44,9 +43,7 @@ namespace MR.AspNetCore.Jobs
 		/// <param name="extension"></param>
 		public void RegisterExtension(IJobsOptionsExtension extension)
 		{
-			if (extension == null) throw new ArgumentNullException(nameof(extension));
-
-			Extension = extension;
+			Extension = extension ?? throw new ArgumentNullException(nameof(extension));
 		}
 	}
 }

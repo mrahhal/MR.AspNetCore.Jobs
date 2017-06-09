@@ -22,6 +22,7 @@ namespace MR.AspNetCore.Jobs
 		public void EnqueueJob(Job job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
+
 			_connection.Context.Add(new JobQueue
 			{
 				JobId = job.Id
