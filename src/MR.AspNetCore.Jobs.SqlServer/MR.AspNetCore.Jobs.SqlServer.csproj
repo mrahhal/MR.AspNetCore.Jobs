@@ -5,6 +5,8 @@
 	<PropertyGroup Label="Build">
 		<TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
 		<RootNamespace>MR.AspNetCore.Jobs</RootNamespace>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Package">
