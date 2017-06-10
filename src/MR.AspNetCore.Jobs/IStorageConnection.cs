@@ -30,7 +30,7 @@ namespace MR.AspNetCore.Jobs
 		Task<IFetchedJob> FetchNextJobAsync();
 
 		/// <summary>
-		/// Gets the next job to be enqueued.
+		/// Returns the next job to be enqueued.
 		/// </summary>
 		Task<Job> GetNextJobToBeEnqueuedAsync();
 
@@ -57,7 +57,7 @@ namespace MR.AspNetCore.Jobs
 		Task UpdateCronJobAsync(CronJob job);
 
 		/// <summary>
-		/// Gets all cron jobs.
+		/// Returns all cron jobs.
 		/// </summary>
 		Task<CronJob[]> GetCronJobsAsync();
 
