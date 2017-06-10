@@ -69,20 +69,19 @@ namespace MR.AspNetCore.Jobs.Server
 		private async Task<bool> Step(ProcessingContext context)
 		{
 			var fetched = default(IFetchedJob);
-			using (var scope = _provider.CreateScope())
+			using (var scopedContext = context.CreateScope())
 			{
-				var provider = scope.ServiceProvider;
+				var provider = scopedContext.Provider;
 				var connection = provider.GetRequiredService<IStorageConnection>();
 
 				if ((fetched = await connection.FetchNextJobAsync()) != null)
 				{
 					using (fetched)
-					using (var scopedContext = context.CreateScope())
 					{
 						var job = await connection.GetJobAsync(fetched.JobId);
 						var invocationData = Helper.FromJson<InvocationData>(job.Data);
 						var method = invocationData.Deserialize();
-						var factory = scopedContext.Provider.GetService<IJobFactory>();
+						var factory = provider.GetService<IJobFactory>();
 
 						var instance = default(object);
 						if (!method.Method.IsStatic)

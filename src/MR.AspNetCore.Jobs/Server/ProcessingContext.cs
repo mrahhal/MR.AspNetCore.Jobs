@@ -47,9 +47,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public ProcessingContext CreateScope()
 		{
-			var serviceScope = Provider
-				.GetRequiredService<IServiceScopeFactory>()
-				.CreateScope();
+			var serviceScope = Provider.CreateScope();
 
 			return new ProcessingContext(this)
 			{
