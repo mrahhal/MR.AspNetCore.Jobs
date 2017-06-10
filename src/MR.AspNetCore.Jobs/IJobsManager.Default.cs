@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 using MR.AspNetCore.Jobs.Server.States;
@@ -12,6 +14,7 @@ namespace MR.AspNetCore.Jobs
 	/// </summary>
 	public class JobsManager : IJobsManager
 	{
+		private ILogger _logger;
 		private JobsOptions _options;
 		private IStorage _storage;
 		private IStateChanger _stateChanger;
@@ -19,12 +22,14 @@ namespace MR.AspNetCore.Jobs
 		private IStorageConnection _connection;
 
 		public JobsManager(
+			ILogger<JobsManager> logger,
 			JobsOptions options,
 			IStorage storage,
 			IStateChanger stateChanger,
 			IProcessingServer server,
 			IStorageConnection connection)
 		{
+			_logger = logger;
 			_options = options;
 			_storage = storage;
 			_stateChanger = stateChanger;
@@ -102,12 +107,40 @@ namespace MR.AspNetCore.Jobs
 		private async Task EnqueueCore(DateTime? due, MethodInvocation method)
 		{
 			var data = InvocationData.Serialize(method);
-			var job = new Job(data.Serialize())
+			var serializedData = data.Serialize();
+			var job = new Job(serializedData)
 			{
 				Due = due
 			};
 
 			await _connection.StoreJobAsync(job);
+
+			if (_logger.IsEnabled(LogLevel.Debug))
+			{
+				var methodCall = string.Format(
+					"{0}.{1}({2})",
+					method.Type.Name,
+					method.Method.Name,
+					string.Join(", ", method.Args.Select(arg => Helper.ToJson(arg))));
+
+				if (due == null)
+				{
+					_logger.LogDebug(
+						"Enqueuing a job to be executed immediately: {MethodCall}", methodCall);
+				}
+				else
+				{
+					var diff = due.Value - DateTime.UtcNow;
+					var after = diff.TotalSeconds < 60 ? $"{Math.Round(diff.TotalSeconds, 2)} secs" :
+						(diff.TotalMinutes < 60 ? $"{Math.Round(diff.TotalMinutes, 2)} minutes" :
+						(diff.TotalHours < 24 ? $"{Math.Round(diff.TotalHours, 2)} hours" :
+						($"{Math.Round(diff.TotalDays, 2)} days")));
+
+					_logger.LogDebug(
+						"Enqueuing a job to be executed after {After}: {MethodCall}", after, methodCall);
+				}
+			}
+
 			if (job.Due == null)
 			{
 				_server.Pulse();

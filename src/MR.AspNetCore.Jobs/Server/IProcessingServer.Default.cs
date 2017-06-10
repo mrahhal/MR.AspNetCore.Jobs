@@ -64,6 +64,7 @@ namespace MR.AspNetCore.Jobs.Server
 				return;
 			}
 
+			_logger.LogTrace("Pulsing the JobQueuer.");
 			JobQueuer.PulseEvent.Set();
 		}
 
