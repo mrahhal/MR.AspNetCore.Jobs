@@ -49,17 +49,4 @@ namespace MR.AspNetCore.Jobs
 		/// <returns>Whether the state transition succeeded.</returns>
 		Task<bool> ChangeStateAsync(int jobId, IState state, string expectedState);
 	}
-
-	public static class JobsManagerExtensions
-	{
-		public static Task EnqueueAsync(this IJobsManager @this, Expression<Action> methodCall, TimeSpan delay)
-		{
-			return @this.EnqueueAsync(methodCall, DateTimeOffset.Now + delay);
-		}
-
-		public static Task EnqueueAsync<T>(this IJobsManager @this, Expression<Action<T>> methodCall, TimeSpan delay)
-		{
-			return @this.EnqueueAsync(methodCall, DateTimeOffset.Now + delay);
-		}
-	}
 }
