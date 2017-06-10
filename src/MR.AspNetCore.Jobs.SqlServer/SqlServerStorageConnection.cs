@@ -80,6 +80,14 @@ WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.State
 			return _context.SaveChangesAsync();
 		}
 
+		public Task AttachCronJobAsync(CronJob job)
+		{
+			if (job == null) throw new ArgumentNullException(nameof(job));
+
+			_context.Attach(job);
+			return Task.FromResult(true);
+		}
+
 		public Task UpdateCronJobAsync(CronJob job)
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));

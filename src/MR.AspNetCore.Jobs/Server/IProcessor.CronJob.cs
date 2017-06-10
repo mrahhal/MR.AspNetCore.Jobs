@@ -75,7 +75,8 @@ namespace MR.AspNetCore.Jobs.Server
 
 				using (var scopedContext = context.CreateScope())
 				{
-					var factory = scopedContext.Provider.GetService<IJobFactory>();
+					var provider = scopedContext.Provider;
+					var factory = provider.GetService<IJobFactory>();
 					var job = (IJob)factory.Create(computedJob.JobType);
 					var success = true;
 
@@ -100,15 +101,12 @@ namespace MR.AspNetCore.Jobs.Server
 
 					if (success)
 					{
-						now = DateTime.UtcNow;
-						computedJob.Update(now);
-						using (var scope = _provider.CreateScope())
-						{
-							var provider = scope.ServiceProvider;
-							var connection = provider.GetRequiredService<IStorageConnection>();
+						var connection = provider.GetRequiredService<IStorageConnection>();
+						await connection.AttachCronJobAsync(computedJob.Job);
 
-							await connection.UpdateCronJobAsync(computedJob.Job);
-						}
+						computedJob.Update(DateTime.UtcNow);
+
+						await connection.UpdateCronJobAsync(computedJob.Job);
 					}
 				}
 			}

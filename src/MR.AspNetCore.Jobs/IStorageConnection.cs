@@ -43,6 +43,14 @@ namespace MR.AspNetCore.Jobs
 		Task StoreCronJobAsync(CronJob job);
 
 		/// <summary>
+		/// Attaches a cron job to a context in preparation for an update call.
+		/// This is necessary for consumers that do change detection such as EF,
+		/// since cron jobs are retrieved once from the storage and are never disposed.
+		/// </summary>
+		/// <param name="job">The job to attach.</param>
+		Task AttachCronJobAsync(CronJob job);
+
+		/// <summary>
 		/// Updates a cron job.
 		/// </summary>
 		/// <param name="job">The job to update.</param>
