@@ -70,10 +70,9 @@ namespace MR.AspNetCore.Jobs.Server
 
 		private bool AllProcessorsWaiting()
 		{
-			// Perf: avoid allocation
-			for (var i = 0; i < _delayedJobProcessors.Length; i++)
+			foreach (var processor in _delayedJobProcessors)
 			{
-				if (!_delayedJobProcessors[i].Waiting)
+				if (!processor.Waiting)
 				{
 					return false;
 				}
