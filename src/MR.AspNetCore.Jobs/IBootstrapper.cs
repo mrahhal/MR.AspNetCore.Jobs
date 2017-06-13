@@ -7,6 +7,9 @@ namespace MR.AspNetCore.Jobs
 	/// </summary>
 	public interface IBootstrapper
 	{
+		/// <summary>
+		/// Bootstraps Jobs. This method also handles starting an <see cref="Server.IProcessingServer"/> implementation.
+		/// </summary>
 		Task BootstrapAsync();
 	}
 }
