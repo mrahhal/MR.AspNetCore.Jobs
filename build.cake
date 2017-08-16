@@ -72,6 +72,11 @@ Task("Pack")
 	};
 	foreach (var project in build.ProjectFiles)
 	{
+		if (util.GetProjectSdk(project.FullPath) == "Microsoft.NET.Sdk.Web")
+		{
+			continue;
+		}
+
 		DotNetCorePack(project.FullPath, settings);
 	}
 });

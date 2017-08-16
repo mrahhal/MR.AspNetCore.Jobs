@@ -22,4 +22,18 @@ Configuration: {Build.Configuration}
 		var seconds = (long)(DateTime.UtcNow - new DateTime(2017, 1, 1)).TotalSeconds;
 		return seconds.ToString().PadLeft(11, (char)'0');
 	}
+
+	public string GetProjectSdk(string project)
+	{
+		var file = Context.File(project);
+		var content = System.IO.File.ReadAllText(file.Path.FullPath);
+
+		XmlDocument doc = new XmlDocument();
+		doc.LoadXml(content);
+
+		var projectNode = doc.DocumentElement.SelectSingleNode("/Project");
+		XmlAttribute sdkAttribute = (XmlAttribute)projectNode.Attributes.GetNamedItem("Sdk");
+
+		return sdkAttribute?.Value;
+	}
 }
