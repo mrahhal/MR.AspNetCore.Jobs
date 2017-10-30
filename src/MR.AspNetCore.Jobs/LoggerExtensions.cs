@@ -8,90 +8,71 @@ namespace MR.AspNetCore.Jobs
 {
 	internal static class LoggerExtensions
 	{
-		private static Action<ILogger, int, int, Exception> _serverStarting;
-		private static Action<ILogger, Exception> _serverShuttingDown;
-		private static Action<ILogger, string, Exception> _expectedOperationCanceledException;
+		private static Action<ILogger, int, int, Exception> _serverStarting = LoggerMessage.Define<int, int>(
+			LogLevel.Debug,
+			1,
+			"Starting the processing server. Detected {MachineProcessorCount} machine processor(s). Initiating {ProcessorCount} job processor(s).");
 
-		private static Action<ILogger, Exception> _cronJobsNotFound;
-		private static Action<ILogger, int, Exception> _cronJobsScheduling;
-		private static Action<ILogger, string, double, Exception> _cronJobExecuted;
-		private static Action<ILogger, string, Exception> _cronJobFailed;
+		private static Action<ILogger, Exception> _serverShuttingDown = LoggerMessage.Define(
+			LogLevel.Debug,
+			2,
+			"Shutting down the processing server...");
 
-		private static Action<ILogger, Exception> _jobFailed;
-		private static Action<ILogger, Exception> _jobFailedWillRetry;
-		private static Action<ILogger, double, Exception> _jobExecuted;
-		private static Action<ILogger, int, Exception> _jobRetrying;
-		private static Action<ILogger, int, Exception> _jobCouldNotBeLoaded;
-		private static Action<ILogger, int, Exception> _exceptionOccuredWhileExecutingJob;
+		private static Action<ILogger, string, Exception> _expectedOperationCanceledException = LoggerMessage.Define<string>(
+			LogLevel.Warning,
+			3,
+			"Expected an OperationCanceledException, but found '{ExceptionMessage}'.");
 
-		static LoggerExtensions()
-		{
-			_serverStarting = LoggerMessage.Define<int, int>(
-				LogLevel.Debug,
-				1,
-				"Starting the processing server. Detected {MachineProcessorCount} machine processor(s). Initiating {ProcessorCount} job processor(s).");
+		private static Action<ILogger, Exception> _cronJobsNotFound = LoggerMessage.Define(
+			LogLevel.Debug,
+			1,
+			"No cron jobs found to schedule, cancelling processing of cron jobs.");
 
-			_serverShuttingDown = LoggerMessage.Define(
-				LogLevel.Debug,
-				2,
-				"Shutting down the processing server...");
+		private static Action<ILogger, int, Exception> _cronJobsScheduling = LoggerMessage.Define<int>(
+			LogLevel.Debug,
+			2,
+			"Found {JobCount} cron job(s) to schedule.");
 
-			_expectedOperationCanceledException = LoggerMessage.Define<string>(
-				LogLevel.Warning,
-				3,
-				"Expected an OperationCanceledException, but found '{ExceptionMessage}'.");
+		private static Action<ILogger, string, double, Exception> _cronJobExecuted = LoggerMessage.Define<string, double>(
+			LogLevel.Debug,
+			3,
+			"Cron job '{JobName}' executed succesfully. Took: {Seconds} secs.");
 
-			_cronJobsNotFound = LoggerMessage.Define(
-				LogLevel.Debug,
-				1,
-				"No cron jobs found to schedule, cancelling processing of cron jobs.");
+		private static Action<ILogger, string, Exception> _cronJobFailed = LoggerMessage.Define<string>(
+			LogLevel.Warning,
+			4,
+			"Cron job '{jobName}' failed to execute.");
 
-			_cronJobsScheduling = LoggerMessage.Define<int>(
-				LogLevel.Debug,
-				2,
-				"Found {JobCount} cron job(s) to schedule.");
+		private static Action<ILogger, Exception> _jobFailed = _jobFailed = LoggerMessage.Define(
+			LogLevel.Warning,
+			1,
+			"Job failed to execute.");
 
-			_cronJobExecuted = LoggerMessage.Define<string, double>(
-				LogLevel.Debug,
-				3,
-				"Cron job '{JobName}' executed succesfully. Took: {Seconds} secs.");
+		private static Action<ILogger, Exception> _jobFailedWillRetry = LoggerMessage.Define(
+			LogLevel.Warning,
+			2,
+			"Job failed to execute. Will retry.");
 
-			_cronJobFailed = LoggerMessage.Define<string>(
-				LogLevel.Warning,
-				4,
-				"Cron job '{jobName}' failed to execute.");
+		private static Action<ILogger, int, Exception> _jobRetrying = _jobRetrying = LoggerMessage.Define<int>(
+			LogLevel.Debug,
+			3,
+			"Retrying a job: {Retries}...");
 
-			_jobFailed = LoggerMessage.Define(
-				LogLevel.Warning,
-				1,
-				"Job failed to execute.");
+		private static Action<ILogger, double, Exception> _jobExecuted = LoggerMessage.Define<double>(
+			LogLevel.Debug,
+			4,
+			"Job executed. Took: {Seconds} secs.");
 
-			_jobFailedWillRetry = LoggerMessage.Define(
-				LogLevel.Warning,
-				2,
-				"Job failed to execute. Will retry.");
+		private static Action<ILogger, int, Exception> _jobCouldNotBeLoaded = LoggerMessage.Define<int>(
+			LogLevel.Warning,
+			5,
+			"Could not load a job: '{JobId}'.");
 
-			_jobRetrying = LoggerMessage.Define<int>(
-				LogLevel.Debug,
-				3,
-				"Retrying a job: {Retries}...");
-
-			_jobExecuted = LoggerMessage.Define<double>(
-				LogLevel.Debug,
-				4,
-				"Job executed. Took: {Seconds} secs.");
-
-			_jobCouldNotBeLoaded = LoggerMessage.Define<int>(
-				LogLevel.Warning,
-				5,
-				"Could not load a job: '{JobId}'.");
-
-			_exceptionOccuredWhileExecutingJob = LoggerMessage.Define<int>(
-				LogLevel.Error,
-				6,
-				"An exception occured while trying to execute a job: '{JobId}'. " +
-				"Requeuing for another retry.");
-		}
+		private static Action<ILogger, int, Exception> _exceptionOccuredWhileExecutingJob = LoggerMessage.Define<int>(
+			LogLevel.Error,
+			6,
+			"An exception occured while trying to execute a job: '{JobId}'. " +
+			"Requeuing for another retry.");
 
 		public static void ServerStarting(this ILogger logger, int machineProcessorCount, int processorCount)
 		{
