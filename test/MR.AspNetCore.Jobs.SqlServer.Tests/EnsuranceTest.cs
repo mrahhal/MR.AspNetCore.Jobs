@@ -5,7 +5,7 @@ namespace MR.AspNetCore.Jobs
 	public class EnsuranceTest : DatabaseTestHost
 	{
 		[Fact]
-		public void Ensure()
+		public void EnsureTest()
 		{
 		}
 	}
