@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-- Support Asp.Net Core 2.0.
+_Nothing yet..._
+
+## [0.8.0] - 2017-11-02
+### Changed
+- Support Asp.Net Core 2.0. [#6](https://github.com/mrahhal/MR.AspNetCore.Jobs/pull/6)
 
 ## [0.7.0] - 2017-06-08
 ### Changed
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 - SqlServer: Move to using EFCore to manage internal migrations and connections to the database.
 
-[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.7.0...HEAD
+[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.8.0...HEAD
+[0.8.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.5.0...0.6.0
