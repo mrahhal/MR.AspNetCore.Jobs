@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MR.AspNetCore.Jobs.Models
 {
-	public class JobsDbContextFactory : IDbContextFactory<JobsDbContext>
+	public class JobsDbContextFactory : IDesignTimeDbContextFactory<JobsDbContext>
 	{
-		public JobsDbContext Create(DbContextFactoryOptions options)
+		public JobsDbContext CreateDbContext(string[] args)
 		{
 			var services = new ServiceCollection();
 
