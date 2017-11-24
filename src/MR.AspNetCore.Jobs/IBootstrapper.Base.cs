@@ -128,7 +128,7 @@ namespace MR.AspNetCore.Jobs
 		public virtual Task BootstrapCoreAsync()
 		{
 			_appLifetime.ApplicationStopping.Register(() => Server.Dispose());
-			return Task.FromResult(0);
+			return Task.CompletedTask;
 		}
 	}
 }

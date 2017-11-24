@@ -145,7 +145,7 @@ namespace MR.AspNetCore.Jobs
 		{
 			public Task ExecuteAsync()
 			{
-				return Task.FromResult(0);
+				return Task.CompletedTask;
 			}
 		}
 	}
