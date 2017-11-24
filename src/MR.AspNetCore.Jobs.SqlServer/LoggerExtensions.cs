@@ -5,34 +5,25 @@ namespace MR.AspNetCore.Jobs
 {
 	internal static class LoggerExtensions
 	{
-		private static Action<ILogger, Exception> _collectingExpiredEntities;
+		private static Action<ILogger, Exception> _collectingExpiredEntities = LoggerMessage.Define(
+			LogLevel.Debug,
+			1,
+			"Collecting expired entities.");
 
-		private static Action<ILogger, Exception> _installing;
-		private static Action<ILogger, Exception> _installingError;
-		private static Action<ILogger, Exception> _installingSuccess;
+		private static Action<ILogger, Exception> _installing = LoggerMessage.Define(
+			LogLevel.Debug,
+			1,
+			"Installing Jobs SQL objects...");
 
-		static LoggerExtensions()
-		{
-			_collectingExpiredEntities = LoggerMessage.Define(
-				LogLevel.Debug,
-				1,
-				"Collecting expired entities.");
+		private static Action<ILogger, Exception> _installingError = LoggerMessage.Define(
+			LogLevel.Warning,
+			2,
+			"Exception occurred during automatic migration. Retrying...");
 
-			_installing = LoggerMessage.Define(
-				LogLevel.Debug,
-				1,
-				"Installing Jobs SQL objects...");
-
-			_installingError = LoggerMessage.Define(
-				LogLevel.Warning,
-				2,
-				"Exception occurred during automatic migration. Retrying...");
-
-			_installingSuccess = LoggerMessage.Define(
-				LogLevel.Debug,
-				3,
-				"Jobs SQL objects installed.");
-		}
+		private static Action<ILogger, Exception> _installingSuccess = LoggerMessage.Define(
+			LogLevel.Debug,
+			3,
+			"Jobs SQL objects installed.");
 
 		public static void CollectingExpiredEntities(this ILogger logger)
 		{
