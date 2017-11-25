@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MR.AspNetCore.Jobs.SqlServer\MR.AspNetCore.Jobs.SqlServer.csproj" />
+    <ProjectReference Include="..\..\src\MR.AspNetCore.Jobs.SqlServer\MR.AspNetCore.Jobs.SqlServer.csproj" />
   </ItemGroup>
 
 </Project>

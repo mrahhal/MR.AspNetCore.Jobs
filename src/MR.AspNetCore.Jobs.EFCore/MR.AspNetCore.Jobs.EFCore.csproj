@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../build/common.props" />
+
+  <PropertyGroup Label="Build">
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <RootNamespace>MR.AspNetCore.Jobs</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <Description>Contains EFCore base classes for MR.AspNetCore.Jobs.</Description>
+    <PackageTags>aspnetcore;background;jobs;sql;efcore;netstandard</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MR.AspNetCore.Jobs\MR.AspNetCore.Jobs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.0.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>

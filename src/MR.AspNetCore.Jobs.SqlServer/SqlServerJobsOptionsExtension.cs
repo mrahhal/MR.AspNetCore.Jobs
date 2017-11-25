@@ -21,12 +21,13 @@ namespace MR.AspNetCore.Jobs
 			services.AddSingleton<IBootstrapper, SqlServerBootstrapper>();
 			services.AddScoped<IStorageConnection, SqlServerStorageConnection>();
 
-			services.AddSingleton<IAdditionalProcessor, ExpirationManager>();
+			services.AddSingleton<IAdditionalProcessor, SqlServerExpirationManager>();
 
 			var sqlServerOptions = new SqlServerOptions();
 			_configure(sqlServerOptions);
 
 			services.AddSingleton(sqlServerOptions);
+			services.AddSingleton<EFCoreOptions>(sqlServerOptions);
 
 			services.AddDbContext<JobsDbContext>(options =>
 			{

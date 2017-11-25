@@ -11,13 +11,14 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class JobQueuer : IProcessor
 	{
-		private ILogger _logger;
-		private JobsOptions _options;
-		private IStateChanger _stateChanger;
-		private IServiceProvider _provider;
-
 		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+
 		private TimeSpan _pollingDelay;
+
+		private readonly ILogger _logger;
+		private readonly JobsOptions _options;
+		private readonly IStateChanger _stateChanger;
+		private readonly IServiceProvider _provider;
 
 		public JobQueuer(
 			ILogger<JobQueuer> logger,

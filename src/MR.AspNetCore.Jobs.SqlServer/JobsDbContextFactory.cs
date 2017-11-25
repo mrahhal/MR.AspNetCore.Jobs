@@ -1,11 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
+using MR.AspNetCore.Jobs.Models;
 
-namespace MR.AspNetCore.Jobs.Models
+namespace MR.AspNetCore.Jobs
 {
 	public class JobsDbContextFactory : IDesignTimeDbContextFactory<JobsDbContext>
 	{
+		internal static string DevConnectionString =
+			@"Server=.\sqlexpress;Database=MR.AspNetCore.Jobs.Dev;Trusted_Connection=True;";
+
 		public JobsDbContext CreateDbContext(string[] args)
 		{
 			var services = new ServiceCollection();
@@ -13,11 +17,11 @@ namespace MR.AspNetCore.Jobs.Models
 			services.AddSingleton(new SqlServerOptions());
 			services.AddDbContext<JobsDbContext>(opts =>
 			{
-				opts.UseSqlServer(JobsDbContext.DevConnectionString, sqlOpts =>
+				opts.UseSqlServer(DevConnectionString, sqlOpts =>
 				{
 					sqlOpts.MigrationsHistoryTable(
-						SqlServerOptions.DefaultMigrationsHistoryTableName,
-						SqlServerOptions.DefaultSchema);
+						EFCoreOptions.DefaultMigrationsHistoryTableName,
+						EFCoreOptions.DefaultSchema);
 				});
 			});
 

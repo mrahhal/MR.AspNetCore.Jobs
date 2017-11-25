@@ -6,15 +6,16 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class SqlServerFetchedJob : IFetchedJob
+	public class SqlFetchedJob : IFetchedJob
 	{
+		private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
+
 		private IDbConnection _connection;
 		private IDbContextTransaction _transaction;
 		private readonly Timer _timer;
-		private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
-		private readonly object _lockObject = new object();
+		private readonly object _lock = new object();
 
-		public SqlServerFetchedJob(
+		public SqlFetchedJob(
 			int jobId,
 			IDbConnection connection,
 			IDbContextTransaction transaction)
@@ -29,7 +30,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void RemoveFromQueue()
 		{
-			lock (_lockObject)
+			lock (_lock)
 			{
 				_transaction.Commit();
 			}
@@ -37,7 +38,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void Requeue()
 		{
-			lock (_lockObject)
+			lock (_lock)
 			{
 				_transaction.Rollback();
 			}
@@ -45,7 +46,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public void Dispose()
 		{
-			lock (_lockObject)
+			lock (_lock)
 			{
 				_timer?.Dispose();
 				_transaction.Dispose();
@@ -55,7 +56,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 		private void ExecuteKeepAliveQuery(object obj)
 		{
-			lock (_lockObject)
+			lock (_lock)
 			{
 				try
 				{

@@ -6,8 +6,8 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class InfiniteRetryProcessor : IProcessor
 	{
-		private IProcessor _inner;
-		private ILogger _logger;
+		private readonly IProcessor _inner;
+		private readonly ILogger _logger;
 
 		public InfiniteRetryProcessor(
 			IProcessor inner,

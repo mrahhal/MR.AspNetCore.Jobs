@@ -13,13 +13,14 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class DelayedJobProcessor : IProcessor
 	{
-		protected ILogger _logger;
-		protected JobsOptions _options;
-		private IStateChanger _stateChanger;
-		private IServiceProvider _provider;
+		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
 
 		private readonly TimeSpan _pollingDelay;
-		internal static readonly AutoResetEvent PulseEvent = new AutoResetEvent(true);
+
+		protected readonly ILogger _logger;
+		protected readonly JobsOptions _options;
+		private readonly IStateChanger _stateChanger;
+		private readonly IServiceProvider _provider;
 
 		public DelayedJobProcessor(
 			ILogger<DelayedJobProcessor> logger,

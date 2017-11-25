@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using MR.AspNetCore.Jobs.Server;
 
@@ -15,11 +14,6 @@ namespace MR.AspNetCore.Jobs
 			IServiceProvider provider)
 			: base(options, storage, server, appLifetime, provider)
 		{
-		}
-
-		public override Task BootstrapCoreAsync()
-		{
-			return base.BootstrapCoreAsync();
 		}
 	}
 }
