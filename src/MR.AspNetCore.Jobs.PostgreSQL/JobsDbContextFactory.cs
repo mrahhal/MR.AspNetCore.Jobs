@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.DependencyInjection;
 using MR.AspNetCore.Jobs.Models;
@@ -8,7 +9,8 @@ namespace MR.AspNetCore.Jobs
 	public class JobsDbContextFactory : IDesignTimeDbContextFactory<JobsDbContext>
 	{
 		internal static string DevConnectionString =
-			@"Server=.\sqlexpress;Database=MR.AspNetCore.Jobs.Dev;Trusted_Connection=True;";
+			Environment.GetEnvironmentVariable("MR_ASPNETCORE_JOBS_POSTGRESQL_CS_DEV") ??
+			@"Server=127.0.0.1;Port=5432;Database=MR.AspNetCore.Jobs.Dev;User Id=postgres;Password=password;";
 
 		public JobsDbContext CreateDbContext(string[] args)
 		{
