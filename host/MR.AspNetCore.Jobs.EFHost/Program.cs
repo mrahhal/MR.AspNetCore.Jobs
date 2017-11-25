@@ -1,4 +1,4 @@
-﻿namespace MR.AspNetCore.Jobs.SqlServer.Host
+﻿namespace MR.AspNetCore.Jobs.EFHost
 {
 	public class Program
 	{
