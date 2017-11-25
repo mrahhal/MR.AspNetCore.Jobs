@@ -22,7 +22,7 @@ namespace MR.AspNetCore.Jobs
 			var table = nameof(EFCoreJobsDbContext.JobQueue);
 			return $@"
 DELETE
-FROM [{Options.Schema}].[{table}] --WITH (readpast, updlock, rowlock)
+FROM [{Options.Schema}].[{table}]
 RETURNING {table}.JobId
 LIMIT 1";
 		}
@@ -31,7 +31,7 @@ LIMIT 1";
 		{
 			return $@"
 SELECT *
-FROM [{Options.Schema}].[{nameof(EFCoreJobsDbContext.Jobs)}] --WITH (readpast)
+FROM [{Options.Schema}].[{nameof(EFCoreJobsDbContext.Jobs)}]
 WHERE (Due IS NULL OR Due < GETUTCDATE()) AND StateName = '{ScheduledState.StateName}'
 LIMIT 1";
 		}

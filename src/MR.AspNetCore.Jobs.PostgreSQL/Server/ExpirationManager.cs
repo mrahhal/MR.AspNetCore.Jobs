@@ -18,7 +18,7 @@ namespace MR.AspNetCore.Jobs.Server
 		{
 			return $@"
 DELETE
-FROM [{schema}].[{table}] --WITH (readpast)
+FROM [{schema}].[{table}]
 WHERE ExpiresAt < @now
 LIMIT @count";
 		}
