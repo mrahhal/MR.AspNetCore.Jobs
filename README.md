@@ -11,6 +11,8 @@ A background processing library for Asp.Net Core.
 
 [CHANGELOG](CHANGELOG.md)
 
+[CONTRIBUTING](CONTRIBUTING.md)
+
 **Note that this is in development so incompatible changes can happen between minor versions. (Starting from `0.7.0`, the api is stabalizing and there'll probably be no breaking changes in the database schema)**
 
 ## Overview
