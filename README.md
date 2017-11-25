@@ -28,7 +28,11 @@ Jobs integrates well with Asp.Net Core and its dependency injection system with 
 
 ## Adapters
 
-- `MR.AspNetCore.Jobs.SqlServer`: Microsoft's Sql Server.
+- `MR.AspNetCore.Jobs.SqlServer`: Microsoft's Sql Server
+- *`MR.AspNetCore.Jobs.PostgreSQL`: PostgreSQL [Coming Soon]*
+- *`MR.AspNetCore.Jobs.MySql`: MySql [Coming Soon]*
+- *`MR.AspNetCore.Jobs.Sqlite`: Sqlite [Coming Soon]*
+- *`MR.AspNetCore.Jobs.Redis`: Redis [Coming Soon]*
 
 ## Getting started
 
