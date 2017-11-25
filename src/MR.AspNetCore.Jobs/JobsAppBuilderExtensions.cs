@@ -1,15 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
-using MR.AspNetCore.Jobs;
+using System;
 
 namespace Microsoft.AspNetCore.Builder
 {
 	public static class JobsAppBuilderExtensions
 	{
+		private const string Message =
+			"Use host.StartJobsAsync() when building your webhost instead. Check the samples for more.";
+
+		[Obsolete(Message)]
 		public static void UseJobs(this IApplicationBuilder app)
 		{
-			var provider = app.ApplicationServices;
-			var bootstrapper = provider.GetRequiredService<IBootstrapper>();
-			bootstrapper.BootstrapAsync();
+			throw new NotImplementedException(Message);
 		}
 	}
 }

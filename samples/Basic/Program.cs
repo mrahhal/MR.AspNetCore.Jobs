@@ -1,20 +1,24 @@
-﻿using System.IO;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using MR.AspNetCore.Jobs;
 
 namespace Basic
 {
 	public class Program
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
-			var host = new WebHostBuilder()
-				.UseKestrel()
-				.UseContentRoot(Directory.GetCurrentDirectory())
-				.UseIISIntegration()
-				.UseStartup<Startup>()
-				.Build();
+			var host = BuildWebHost(args);
+
+			await host.StartJobsAsync();
 
 			host.Run();
 		}
+
+		public static IWebHost BuildWebHost(string[] args) =>
+			WebHost.CreateDefaultBuilder(args)
+				.UseStartup<Startup>()
+				.Build();
 	}
 }

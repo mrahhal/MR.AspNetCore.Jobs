@@ -40,13 +40,28 @@ public void ConfigureServices(IServiceCollection services)
     // Registers Jobs with an sql server adapter
     services.AddJobs(options => options.UseSqlServer("[my connection string]"));
 }
+```
 
-public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+```cs
+public static async Task Main(string[] args)
 {
-    ...
-    // Starts the processing server
-    app.UseJobs();
+    var host = BuildWebHost(args);
+
+    await host.StartJobsAsync();
+
+    host.Run();
 }
+
+public static IWebHost BuildWebHost(string[] args) =>
+    WebHost.CreateDefaultBuilder(args)
+        .UseStartup<Startup>()
+        .Build();
+```
+
+If you're not using latest C# version and therefore can't use `async Main`, you can simply do:
+
+```cs
+host.StartJobsAsync().GetAwaiter().GetResult();
 ```
 
 Anywhere you want to enqueue a background job you use `IJobsManager`, use DI to get it injected:

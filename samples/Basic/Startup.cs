@@ -6,23 +6,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace Basic
 {
 	public class Startup
 	{
-		public Startup(IHostingEnvironment env)
+		public Startup(IConfiguration configuration)
 		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(env.ContentRootPath)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-				.AddEnvironmentVariables();
-			Configuration = builder.Build();
+			Configuration = configuration;
 		}
 
-		public IConfigurationRoot Configuration { get; }
+		public IConfiguration Configuration { get; }
 
 		public void ConfigureServices(IServiceCollection services)
 		{
@@ -55,11 +49,8 @@ namespace Basic
 			services.AddScoped<FooService>();
 		}
 
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
-			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-			loggerFactory.AddDebug();
-
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -70,16 +61,6 @@ namespace Basic
 			}
 
 			app.UseStaticFiles();
-
-			// Make sure the database is created first
-			using (var scope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-			{
-				var provider = scope.ServiceProvider;
-				provider.GetRequiredService<AppDbContext>().Database.Migrate();
-			}
-
-			// Starts the processing server
-			app.UseJobs();
 
 			app.UseMvc(routes =>
 			{
