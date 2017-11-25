@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -27,8 +26,8 @@ namespace MR.AspNetCore.Jobs
 			Options = options;
 			Storage = storage;
 			Server = server;
-			_appLifetime = appLifetime;
 			Provider = provider;
+			_appLifetime = appLifetime;
 
 			_cts = new CancellationTokenSource();
 			_ctsRegistration = appLifetime.ApplicationStopping.Register(() =>
@@ -50,7 +49,7 @@ namespace MR.AspNetCore.Jobs
 
 		protected IProcessingServer Server { get; }
 
-		public IServiceProvider Provider { get; private set; }
+		protected IServiceProvider Provider { get; }
 
 		public Task BootstrapAsync()
 		{
@@ -62,7 +61,7 @@ namespace MR.AspNetCore.Jobs
 			await Storage.InitializeAsync(_cts.Token);
 			if (_cts.IsCancellationRequested) return;
 
-			await WorkOutCronJobs();
+			await SyncCronJobsAsync();
 			if (_cts.IsCancellationRequested) return;
 
 			await BootstrapCoreAsync();
@@ -74,7 +73,7 @@ namespace MR.AspNetCore.Jobs
 			_cts.Dispose();
 		}
 
-		public async Task WorkOutCronJobs()
+		public async Task SyncCronJobsAsync()
 		{
 			var entries = Options.CronJobRegistry?.Build() ?? new CronJobRegistry.Entry[0];
 			using (var scope = Provider.CreateScope())
@@ -83,11 +82,11 @@ namespace MR.AspNetCore.Jobs
 				var connection = provider.GetService<IStorageConnection>();
 
 				var currentJobs = await connection.GetCronJobsAsync();
-				await WorkOutCronJobsCore(connection, entries, currentJobs);
+				await SyncCronJobsCoreAsync(connection, entries, currentJobs);
 			}
 		}
 
-		public virtual async Task WorkOutCronJobsCore(
+		public virtual async Task SyncCronJobsCoreAsync(
 			IStorageConnection connection,
 			CronJobRegistry.Entry[] entries,
 			CronJob[] currentJobs)
