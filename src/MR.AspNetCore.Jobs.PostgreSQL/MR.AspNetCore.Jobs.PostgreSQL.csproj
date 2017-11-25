@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../build/common.props" />
+
+  <PropertyGroup Label="Build">
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <RootNamespace>MR.AspNetCore.Jobs</RootNamespace>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package">
+    <Description>A PostgreSQL adapter for MR.AspNetCore.Jobs.</Description>
+    <PackageTags>aspnetcore;background;jobs;sql;postgresql;netstandard</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MR.AspNetCore.Jobs.EFCore\MR.AspNetCore.Jobs.EFCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1" />
+  </ItemGroup>
+
+</Project>
