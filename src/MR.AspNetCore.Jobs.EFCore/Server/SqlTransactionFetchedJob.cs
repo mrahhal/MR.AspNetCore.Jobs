@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Threading;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -28,20 +29,22 @@ namespace MR.AspNetCore.Jobs.Server
 
 		public int JobId { get; }
 
-		public void RemoveFromQueue()
+		public Task RemoveFromQueueAsync()
 		{
 			lock (_lock)
 			{
 				_transaction.Commit();
 			}
+			return Task.CompletedTask;
 		}
 
-		public void Requeue()
+		public Task RequeueAsync()
 		{
 			lock (_lock)
 			{
 				_transaction.Rollback();
 			}
+			return Task.CompletedTask;
 		}
 
 		public void Dispose()
