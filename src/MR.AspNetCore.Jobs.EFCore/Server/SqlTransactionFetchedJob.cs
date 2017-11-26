@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace MR.AspNetCore.Jobs.Server
 {
-	public class SqlFetchedJob : IFetchedJob
+	public class SqlTransactionFetchedJob : IFetchedJob
 	{
 		private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
 
@@ -15,7 +15,7 @@ namespace MR.AspNetCore.Jobs.Server
 		private readonly Timer _timer;
 		private readonly object _lock = new object();
 
-		public SqlFetchedJob(
+		public SqlTransactionFetchedJob(
 			int jobId,
 			IDbConnection connection,
 			IDbContextTransaction transaction)

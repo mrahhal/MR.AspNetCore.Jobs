@@ -147,7 +147,7 @@ namespace MR.AspNetCore.Jobs
 				return null;
 			}
 
-			return new SqlFetchedJob(
+			return new SqlTransactionFetchedJob(
 				fetchedJob.JobId,
 				connection,
 				transaction);
