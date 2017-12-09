@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Threading;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -8,12 +9,11 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class SqlTransactionFetchedJob : IFetchedJob
 	{
-		private static readonly TimeSpan KeepAliveInterval = TimeSpan.FromMinutes(1);
-
-		private IDbConnection _connection;
-		private IDbContextTransaction _transaction;
 		private readonly Timer _timer;
 		private readonly object _lock = new object();
+
+		private IDbConnection _connection;
+		private readonly IDbContextTransaction _transaction;
 
 		public SqlTransactionFetchedJob(
 			int jobId,
@@ -23,25 +23,34 @@ namespace MR.AspNetCore.Jobs.Server
 			JobId = jobId;
 			_connection = connection;
 			_transaction = transaction;
-			_timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
+			if (TransactionCanTerminate)
+			{
+				_timer = new Timer(ExecuteKeepAliveQuery, null, KeepAliveInterval, KeepAliveInterval);
+			}
 		}
+
+		public virtual bool TransactionCanTerminate => true;
+
+		public virtual TimeSpan KeepAliveInterval => TimeSpan.FromMinutes(1);
 
 		public int JobId { get; }
 
-		public void RemoveFromQueue()
+		public Task RemoveFromQueueAsync()
 		{
 			lock (_lock)
 			{
 				_transaction.Commit();
 			}
+			return Task.CompletedTask;
 		}
 
-		public void Requeue()
+		public Task RequeueAsync()
 		{
 			lock (_lock)
 			{
 				_transaction.Rollback();
 			}
+			return Task.CompletedTask;
 		}
 
 		public void Dispose()

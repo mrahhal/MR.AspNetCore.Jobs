@@ -11,9 +11,10 @@ using System;
 namespace MR.AspNetCore.Jobs.SqlServer.Migrations
 {
     [DbContext(typeof(JobsDbContext))]
-    partial class JobsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171209083434_add_Jobs.Updated")]
+    partial class add_JobsUpdated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

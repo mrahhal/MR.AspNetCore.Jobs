@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,21 +12,45 @@ using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
 {
-	public abstract class EFCoreStorageConnection<TContext, TOptions> : IStorageConnection
+	public abstract class EFCoreStorageConnection
+	{
+		public EFCoreStorageConnection(
+			EFCoreJobsDbContext context,
+			EFCoreOptions options)
+		{
+			BaseContext = context;
+			BaseOptions = options;
+		}
+
+		public EFCoreJobsDbContext BaseContext { get; }
+
+		public EFCoreOptions BaseOptions { get; }
+
+		public DbConnection GetDbConnection() => BaseContext.GetDbConnection();
+	}
+
+	public abstract class EFCoreStorageConnection<TContext, TOptions> : EFCoreStorageConnection, IStorageConnection
 		where TContext : EFCoreJobsDbContext
 		where TOptions : EFCoreOptions
 	{
 		public EFCoreStorageConnection(
 			TContext context,
-			TOptions options)
+			TOptions options,
+			IServiceProvider services)
+			: base(context, options)
 		{
 			Context = context;
 			Options = options;
+			Services = services;
 		}
 
 		public EFCoreJobsDbContext Context { get; }
 
 		public EFCoreOptions Options { get; }
+
+		public IServiceProvider Services { get; }
+
+		protected abstract bool UseTransactionFetchedJob { get; }
 
 		public virtual Task StoreJobAsync(Job job)
 		{
@@ -45,7 +70,9 @@ namespace MR.AspNetCore.Jobs
 		public virtual Task<IFetchedJob> FetchNextJobAsync()
 		{
 			var sql = CreateFetchNextJobQuery();
-			return FetchNextDelayedJobCoreAsync(sql);
+			return UseTransactionFetchedJob ?
+				FetchNextDelayedJobUsingTransactionAsync(sql) :
+				FetchNextDelayedJobUsingTimeoutAsync(sql);
 		}
 
 		protected abstract string CreateFetchNextJobQuery();
@@ -121,7 +148,7 @@ namespace MR.AspNetCore.Jobs
 			return dateTime;
 		}
 
-		private async Task<IFetchedJob> FetchNextDelayedJobCoreAsync(string sql, object args = null)
+		private async Task<IFetchedJob> FetchNextDelayedJobUsingTransactionAsync(string sql)
 		{
 			FetchedJob fetchedJob = null;
 			var connection = Context.GetDbConnection();
@@ -131,7 +158,7 @@ namespace MR.AspNetCore.Jobs
 			try
 			{
 				fetchedJob =
-					(await connection.QueryAsync<FetchedJob>(sql, args, transaction.GetDbTransaction()))
+					(await connection.QueryAsync<FetchedJob>(sql, null, transaction.GetDbTransaction()))
 					.FirstOrDefault();
 			}
 			catch (SqlException)
@@ -151,6 +178,26 @@ namespace MR.AspNetCore.Jobs
 				fetchedJob.JobId,
 				connection,
 				transaction);
+		}
+
+		private async Task<IFetchedJob> FetchNextDelayedJobUsingTimeoutAsync(string sql)
+		{
+			FetchedJob fetchedJob = null;
+			var connection = Context.GetDbConnection();
+
+			fetchedJob =
+				(await connection.QueryAsync<FetchedJob>(sql))
+				.FirstOrDefault();
+
+			if (fetchedJob == null)
+			{
+				return null;
+			}
+
+			return new SqlTimeoutFetchedJob(
+				Services,
+				fetchedJob.Id,
+				fetchedJob.JobId);
 		}
 	}
 }

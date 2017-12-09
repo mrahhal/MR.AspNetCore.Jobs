@@ -85,8 +85,8 @@ namespace MR.AspNetCore.Jobs.Server
 			// Assert
 			_mockStorageConnection.VerifyAll();
 			_mockStateChanger.Verify(m => m.ChangeState(job, It.IsAny<SucceededState>(), It.IsAny<IStorageTransaction>()));
-			mockFetchedJob.Verify(m => m.Requeue(), Times.Never);
-			mockFetchedJob.Verify(m => m.RemoveFromQueue());
+			mockFetchedJob.Verify(m => m.RequeueAsync(), Times.Never);
+			mockFetchedJob.Verify(m => m.RemoveFromQueueAsync());
 		}
 
 		[Fact]
@@ -117,7 +117,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 			// Assert
 			job.Retries.Should().Be(0);
-			mockFetchedJob.Verify(m => m.Requeue());
+			mockFetchedJob.Verify(m => m.RequeueAsync());
 		}
 
 		[Fact]
@@ -148,7 +148,7 @@ namespace MR.AspNetCore.Jobs.Server
 			_mockStorageTransaction.Verify(m => m.UpdateJob(job));
 			_mockStorageConnection.VerifyAll();
 			_mockStateChanger.Verify(m => m.ChangeState(job, It.IsAny<ScheduledState>(), It.IsAny<IStorageTransaction>()));
-			mockFetchedJob.Verify(m => m.RemoveFromQueue());
+			mockFetchedJob.Verify(m => m.RemoveFromQueueAsync());
 		}
 
 		[Fact]

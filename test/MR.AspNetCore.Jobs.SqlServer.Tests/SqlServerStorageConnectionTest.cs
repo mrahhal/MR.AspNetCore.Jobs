@@ -53,8 +53,8 @@ namespace MR.AspNetCore.Jobs
 				var fixture2 = Create(scope2.ServiceProvider);
 				fJob2 = await fixture2.FetchNextJobAsync();
 
-				fJob1.RemoveFromQueue();
-				fJob2.RemoveFromQueue();
+				await fJob1.RemoveFromQueueAsync();
+				await fJob2.RemoveFromQueueAsync();
 			}
 
 			// Assert
@@ -95,7 +95,7 @@ namespace MR.AspNetCore.Jobs
 
 			// Act
 			var result = await fixture.FetchNextJobAsync();
-			result.RemoveFromQueue();
+			await result.RemoveFromQueueAsync();
 			result.Dispose();
 
 			// Assert
@@ -117,7 +117,7 @@ namespace MR.AspNetCore.Jobs
 
 			// Act
 			var result = await fixture.FetchNextJobAsync();
-			result.RemoveFromQueue();
+			await result.RemoveFromQueueAsync();
 			result.Dispose();
 
 			// Assert
@@ -239,7 +239,7 @@ namespace MR.AspNetCore.Jobs
 
 			// Act
 			var result = await fixture.FetchNextJobAsync();
-			result.Requeue();
+			await result.RequeueAsync();
 			result.Dispose();
 
 			// Assert

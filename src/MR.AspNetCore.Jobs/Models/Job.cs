@@ -32,6 +32,8 @@ namespace MR.AspNetCore.Jobs.Models
 
 		public DateTime Added { get; set; }
 
+		public DateTime? Updated { get; set; }
+
 		public DateTime? Due { get; set; }
 
 		public DateTime? ExpiresAt { get; set; }

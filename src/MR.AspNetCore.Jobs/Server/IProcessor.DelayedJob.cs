@@ -125,7 +125,7 @@ namespace MR.AspNetCore.Jobs.Server
 
 							await _stateChanger.ChangeStateAsync(job, newState, connection);
 
-							fetched.RemoveFromQueue();
+							await fetched.RemoveFromQueueAsync();
 							if (result.Succeeded)
 							{
 								_logger.JobExecuted(sp.Elapsed.TotalSeconds);
@@ -136,13 +136,13 @@ namespace MR.AspNetCore.Jobs.Server
 							_logger.JobCouldNotBeLoaded(job.Id, ex);
 
 							await _stateChanger.ChangeStateAsync(job, new FailedState(), connection);
-							fetched.RemoveFromQueue();
+							await fetched.RemoveFromQueueAsync();
 						}
 						catch (Exception ex)
 						{
 							_logger.ExceptionOccuredWhileExecutingJob(job.Id, ex);
 
-							fetched.Requeue();
+							await fetched.RequeueAsync();
 						}
 					}
 				}

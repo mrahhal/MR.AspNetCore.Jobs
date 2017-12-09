@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 namespace MR.AspNetCore.Jobs.Server
 {
@@ -6,8 +7,8 @@ namespace MR.AspNetCore.Jobs.Server
 	{
 		int JobId { get; }
 
-		// REVIEW: Shouldn't these be async too?
-		void RemoveFromQueue();
-		void Requeue();
+		Task RemoveFromQueueAsync();
+
+		Task RequeueAsync();
 	}
 }
