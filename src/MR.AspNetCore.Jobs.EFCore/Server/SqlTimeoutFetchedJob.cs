@@ -44,7 +44,7 @@ namespace MR.AspNetCore.Jobs.Server
 					var connection = storageConnection.GetDbConnection();
 
 					connection.Execute(
-						$"DELETE FROM {storageConnection.BaseOptions.Schema}.JobQueue WHERE Id = @id",
+						CreateRemoveFromQueueQuery(storageConnection),
 						new { id = Id });
 
 					_removedFromQueue = true;
@@ -52,6 +52,11 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 
 			return Task.CompletedTask;
+		}
+
+		protected virtual string CreateRemoveFromQueueQuery(EFCoreStorageConnection storageConnection)
+		{
+			return $"DELETE FROM {storageConnection.BaseOptions.Schema}.JobQueue WHERE Id = @id";
 		}
 
 		public Task RequeueAsync()
@@ -64,7 +69,7 @@ namespace MR.AspNetCore.Jobs.Server
 					var connection = storageConnection.GetDbConnection();
 
 					connection.Execute(
-						$"UPDATE {storageConnection.BaseOptions.Schema}.JobQueue SET FetchedAt = null WHERE Id = @id",
+						CreateRequeueQuery(storageConnection),
 						new { id = Id });
 
 					_requeued = true;
@@ -72,6 +77,11 @@ namespace MR.AspNetCore.Jobs.Server
 			}
 
 			return Task.CompletedTask;
+		}
+
+		protected virtual string CreateRequeueQuery(EFCoreStorageConnection storageConnection)
+		{
+			return $"UPDATE {storageConnection.BaseOptions.Schema}.JobQueue SET FetchedAt = NULL WHERE Id = @id";
 		}
 
 		public void Dispose()
