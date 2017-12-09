@@ -19,6 +19,8 @@ namespace MR.AspNetCore.Jobs
 		{
 			if (job == null) throw new ArgumentNullException(nameof(job));
 
+			job.Updated = DateTime.UtcNow;
+
 			// NOOP. EF will detect changes.
 		}
 

@@ -28,6 +28,8 @@ namespace MR.AspNetCore.Jobs.Models
 
 				b.HasIndex(x => new { x.Due, x.StateName });
 				b.HasIndex(x => x.StateName);
+				b.HasIndex(x => x.Added);
+				b.HasIndex(x => x.Updated);
 			});
 
 			builder.Entity<CronJob>(b =>
