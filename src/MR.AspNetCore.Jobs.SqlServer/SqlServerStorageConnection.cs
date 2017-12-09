@@ -1,3 +1,4 @@
+using System;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server.States;
 
@@ -7,10 +8,13 @@ namespace MR.AspNetCore.Jobs
 	{
 		public SqlServerStorageConnection(
 			JobsDbContext context,
-			SqlServerOptions options)
-			: base(context, options)
+			SqlServerOptions options,
+			IServiceProvider services)
+			: base(context, options, services)
 		{
 		}
+
+		protected override bool UseTransactionFetchedJob => true;
 
 		public override IStorageTransaction CreateTransaction()
 		{

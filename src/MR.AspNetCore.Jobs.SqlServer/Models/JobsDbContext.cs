@@ -36,6 +36,11 @@ namespace MR.AspNetCore.Jobs.Models
 
 				b.HasIndex(x => x.Name).IsUnique();
 			});
+
+			builder.Entity<JobQueue>(b =>
+			{
+				b.Ignore(x => x.FetchedAt);
+			});
 		}
 	}
 }

@@ -9,10 +9,11 @@ namespace MR.AspNetCore.Jobs.Server
 {
 	public class SqlTransactionFetchedJob : IFetchedJob
 	{
-		private IDbConnection _connection;
-		private IDbContextTransaction _transaction;
 		private readonly Timer _timer;
 		private readonly object _lock = new object();
+
+		private IDbConnection _connection;
+		private readonly IDbContextTransaction _transaction;
 
 		public SqlTransactionFetchedJob(
 			int jobId,
