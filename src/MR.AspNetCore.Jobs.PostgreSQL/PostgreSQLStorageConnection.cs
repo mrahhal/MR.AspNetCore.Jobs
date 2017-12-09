@@ -43,7 +43,7 @@ RETURNING ""{table}"".""JobId""";
 			return $@"
 SELECT *
 FROM ""{Options.Schema}"".""{nameof(EFCoreJobsDbContext.Jobs)}""
-WHERE (Due IS NULL OR Due < NOW() AT TIME ZONE 'UTC') AND StateName = '{ScheduledState.StateName}'
+WHERE (""Due"" IS NULL OR ""Due"" < NOW() AT TIME ZONE 'UTC') AND ""StateName"" = '{ScheduledState.StateName}'
 LIMIT 1";
 		}
 
