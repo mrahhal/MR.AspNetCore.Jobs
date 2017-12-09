@@ -194,6 +194,11 @@ namespace MR.AspNetCore.Jobs
 				return null;
 			}
 
+			return CreateSqlTimeoutFetchedJob(fetchedJob);
+		}
+
+		protected virtual IFetchedJob CreateSqlTimeoutFetchedJob(FetchedJob fetchedJob)
+		{
 			return new SqlTimeoutFetchedJob(
 				Services,
 				fetchedJob.Id,

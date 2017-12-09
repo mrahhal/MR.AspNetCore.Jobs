@@ -11,9 +11,10 @@ using System;
 namespace MR.AspNetCore.Jobs.Migrations
 {
     [DbContext(typeof(JobsDbContext))]
-    partial class JobsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20171209095228_add_JobQueue.FetchedAt")]
+    partial class add_JobQueueFetchedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
