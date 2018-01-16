@@ -19,8 +19,13 @@ namespace MR.AspNetCore.Jobs.Server
 			return $@"
 DELETE
 FROM ""{schema}"".""{table}""
-WHERE ExpiresAt < @now
-LIMIT @count";
+WHERE ""ExpiresAt"" < @now
+AND ctid IN (
+	SELECT ctid
+	FROM ""{schema}"".""{table}""
+	ORDER BY ""ExpiresAt""
+	LIMIT @count
+)";
 		}
 	}
 }
