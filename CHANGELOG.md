@@ -27,7 +27,8 @@ Nothing yet...
 ### Changed
 - SqlServer: Move to using EFCore to manage internal migrations and connections to the database.
 
-[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.8.0...HEAD
+[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.9.0...HEAD
+[0.9.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.5.0...0.6.0
