@@ -82,7 +82,7 @@ namespace MR.AspNetCore.Jobs
 
 		private class DelegateDisposable : IDisposable
 		{
-			private Action _dispose;
+			private readonly Action _dispose;
 
 			public DelegateDisposable(Action dispose)
 			{

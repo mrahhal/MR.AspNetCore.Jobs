@@ -1,6 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Basic.Models;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using MR.AspNetCore.Jobs;
 
 namespace Basic
@@ -9,16 +12,20 @@ namespace Basic
 	{
 		public static async Task Main(string[] args)
 		{
-			var host = BuildWebHost(args);
+			var host = CreateWebHostBuilder(args).Build();
 
 			await host.StartJobsAsync();
+			using (var scope = host.Services.CreateScope())
+			{
+				var context = scope.ServiceProvider.GetService<AppDbContext>();
+				await context.Database.MigrateAsync();
+			}
 
 			host.Run();
 		}
 
-		public static IWebHost BuildWebHost(string[] args) =>
+		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 			WebHost.CreateDefaultBuilder(args)
-				.UseStartup<Startup>()
-				.Build();
+				.UseStartup<Startup>();
 	}
 }

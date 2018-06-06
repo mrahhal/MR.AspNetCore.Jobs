@@ -3,7 +3,6 @@
   <Import Project="version.props" />
 
   <PropertyGroup Label="Build">
-    <TargetFrameworks>net451;netstandard1.5</TargetFrameworks>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
