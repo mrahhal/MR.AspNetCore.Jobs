@@ -14,10 +14,8 @@ namespace Microsoft.Extensions.DependencyInjection
 		/// <param name="assembly">Assembly containing classes extending from <see cref="CronJobRegistry"/>.</param>
 		public static void UseCronJobRegistries(this JobsOptions jobsOptions, Assembly assembly)
 		{
-			// get all classes extending cron job registry
-			var types = assembly.GetTypes()
-				.Where(type => typeof(CronJobRegistry)
-				.IsAssignableFrom(type));
+			// Get all classes extending cron job registry
+			var types = assembly.GetTypes().Where(type => typeof(CronJobRegistry).IsAssignableFrom(type));
 
 			foreach (var type in types)
 			{
