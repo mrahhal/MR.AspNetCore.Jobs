@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 Nothing yet...
 
+## [0.10.0] - 2018-07-20
+### Added
+- JobsOptions extension to load CronJobRegistry from an assembly. [#15](https://github.com/mrahhal/MR.AspNetCore.Jobs/pull/15)
+
 ## [0.9.0] - 2018-06-06
 ### Changed
 - Starting Jobs should now be done before the webhost runs, and not inside Startup's Configure method. Check the Basic sample to learn more.
@@ -27,7 +31,8 @@ Nothing yet...
 ### Changed
 - SqlServer: Move to using EFCore to manage internal migrations and connections to the database.
 
-[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.9.0...HEAD
+[Unreleased]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.10.0...HEAD
+[0.10.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.9.0...0.10.0
 [0.9.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.8.0...0.9.0
 [0.8.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.7.0...0.8.0
 [0.7.0]: https://github.com/mrahhal/MR.AspNetCore.Jobs/compare/0.6.0...0.7.0
