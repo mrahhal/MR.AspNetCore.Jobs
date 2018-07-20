@@ -37,6 +37,9 @@ namespace Basic
 				// Use the cron jobs registry
 				options.UseCronJobRegistry<BasicCronJobRegistry>();
 
+				// or load from an assembly
+				//options.UseCronJobRegistries(typeof(Startup).Assembly);
+
 				// Configure the polling delay used when polling the storage (in seconds)
 				options.PollingDelay = 10;
 			});
