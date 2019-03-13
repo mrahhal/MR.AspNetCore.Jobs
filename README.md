@@ -17,7 +17,7 @@ A background processing library for Asp.Net Core.
 
 ## Overview
 
-A lot of the code was inspired from [Hangfire](https://github.com/HangfireIO/Hangfire) but this is a complete (and a more lightweight) rewrite. I'll refer to this library as "Jobs".
+This was inspired by [Hangfire](https://github.com/HangfireIO/Hangfire) but this is a complete (and a more lightweight) rewrite. I'll refer to this library as "Jobs".
 
 Jobs integrates well with Asp.Net Core and its dependency injection system with the following features:
 
@@ -31,10 +31,11 @@ Jobs integrates well with Asp.Net Core and its dependency injection system with 
 ## Adapters
 
 - `MR.AspNetCore.Jobs.SqlServer`: Microsoft's Sql Server
-- *`MR.AspNetCore.Jobs.PostgreSQL`: PostgreSQL [Coming Soon]*
-- *`MR.AspNetCore.Jobs.MySql`: MySql [Coming Soon]*
-- *`MR.AspNetCore.Jobs.Sqlite`: Sqlite [Coming Soon]*
-- *`MR.AspNetCore.Jobs.Redis`: Redis [Coming Soon]*
+- *`MR.AspNetCore.Jobs.InMemory`: InMemory [Coming Soon]*
+- *`MR.AspNetCore.Jobs.PostgreSQL`: PostgreSQL [Coming Soon, maybe]*
+- *`MR.AspNetCore.Jobs.MySql`: MySql [Coming Soon, maybe]*
+- *`MR.AspNetCore.Jobs.Sqlite`: Sqlite [Coming Soon, maybe]*
+- *`MR.AspNetCore.Jobs.Redis`: Redis [Coming Soon, maybe]*
 
 ## Getting started
 
