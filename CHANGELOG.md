@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 Nothing yet...
 
+## [0.11.0] - 2020-01-15
+### Changed
+- Support Asp.Net Core 3.1.
+
 ## [0.10.0] - 2018-07-20
 ### Added
 - JobsOptions extension to load CronJobRegistry from an assembly. [#15](https://github.com/mrahhal/MR.AspNetCore.Jobs/pull/15)
