@@ -1,5 +1,5 @@
 using System;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using MR.AspNetCore.Jobs.Server;
 
 namespace MR.AspNetCore.Jobs
@@ -10,7 +10,7 @@ namespace MR.AspNetCore.Jobs
 			JobsOptions options,
 			IStorage storage,
 			IProcessingServer server,
-			IApplicationLifetime appLifetime,
+			IHostApplicationLifetime appLifetime,
 			IServiceProvider provider)
 			: base(options, storage, server, appLifetime, provider)
 		{

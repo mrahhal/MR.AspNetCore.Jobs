@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
@@ -15,7 +15,7 @@ namespace MR.AspNetCore.Jobs
 		private Mock<IProcessingServer> _mockProcessingServer;
 		private Mock<IStorage> _mockStorage;
 		private ServiceCollection _services;
-		private Mock<IApplicationLifetime> _mockApplicationLifetime;
+		private Mock<IHostApplicationLifetime> _mockApplicationLifetime;
 		private Mock<IStorageConnection> _mockStorageConnection;
 
 		public SqlServerBootstrapperTest()
@@ -29,7 +29,7 @@ namespace MR.AspNetCore.Jobs
 			_mockStorageConnection = new Mock<IStorageConnection>();
 			_services.AddSingleton(_mockStorage.Object);
 			_services.AddSingleton(_mockStorageConnection.Object);
-			_mockApplicationLifetime = new Mock<IApplicationLifetime>();
+			_mockApplicationLifetime = new Mock<IHostApplicationLifetime>();
 			_services.AddSingleton(_mockApplicationLifetime.Object);
 			_services.AddTransient<SqlServerBootstrapper>();
 		}

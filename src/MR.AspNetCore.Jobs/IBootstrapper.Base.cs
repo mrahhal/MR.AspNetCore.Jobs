@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MR.AspNetCore.Jobs.Models;
 using MR.AspNetCore.Jobs.Server;
 
@@ -11,7 +11,7 @@ namespace MR.AspNetCore.Jobs
 {
 	public abstract class BootstrapperBase : IBootstrapper
 	{
-		private IApplicationLifetime _appLifetime;
+		private IHostApplicationLifetime _appLifetime;
 		private CancellationTokenSource _cts;
 		private CancellationTokenRegistration _ctsRegistration;
 		private Task _bootstrappingTask;
@@ -20,7 +20,7 @@ namespace MR.AspNetCore.Jobs
 			JobsOptions options,
 			IStorage storage,
 			IProcessingServer server,
-			IApplicationLifetime appLifetime,
+			IHostApplicationLifetime appLifetime,
 			IServiceProvider provider)
 		{
 			Options = options;
