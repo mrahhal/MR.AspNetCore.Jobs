@@ -52,17 +52,24 @@ public void ConfigureServices(IServiceCollection services)
 ```cs
 public static async Task Main(string[] args)
 {
-    var host = BuildWebHost(args);
+	var host = CreateHostBuilder(args).Build();
 
-    await host.StartJobsAsync();
+	await host.StartJobsAsync();
+	using (var scope = host.Services.CreateScope())
+	{
+		var context = scope.ServiceProvider.GetService<AppDbContext>();
+		await context.Database.MigrateAsync();
+	}
 
-    host.Run();
+	host.Run();
 }
 
-public static IWebHost BuildWebHost(string[] args) =>
-    WebHost.CreateDefaultBuilder(args)
-        .UseStartup<Startup>()
-        .Build();
+public static IHostBuilder CreateHostBuilder(string[] args) =>
+	Host.CreateDefaultBuilder(args)
+		.ConfigureWebHostDefaults(webBuilder =>
+		{
+			webBuilder.UseStartup<Startup>();
+		});
 ```
 
 If you're not using latest C# version and therefore can't use `async Main`, you can simply do:
